@@ -1,0 +1,134 @@
+{
+  "Series": [
+    {
+      "ID": 1,
+      "Nome": "1 ano",
+      "Turmas": [
+        {
+          "ID": 1,
+          "Nome": "",
+          "Estudantes": [
+            {
+              "ID": 1,
+              "Nome": "Ana"
+            }
+          ],
+          "Diarios": []
+        }
+      ]
+    },
+    {
+      "ID": 2,
+      "Nome": "2 ano",
+      "Turmas": [
+        {
+          "ID": 2,
+          "Nome": "B",
+          "Estudantes": [
+            {
+              "ID": 2,
+              "Nome": "Bruno"
+            },
+            {
+              "ID": 3,
+              "Nome": "Carlos"
+            }
+          ],
+          "Diarios": [
+            {
+              "ID": 1,
+              "Disciplina": "Mat.",
+              "Educador": "Jo\u00E3o",
+              "Aulas": [
+                {
+                  "ID": 1,
+                  "DiaSemana": "Seg",
+                  "NumeroAula": 1
+                }
+              ],
+              "Registros": []
+            },
+            {
+              "ID": 2,
+              "Disciplina": "Port.",
+              "Educador": "Maria",
+              "Aulas": [
+                {
+                  "ID": 2,
+                  "DiaSemana": "Qua",
+                  "NumeroAula": 2
+                }
+              ],
+              "Registros": []
+            }
+          ]
+        },
+        {
+          "ID": 3,
+          "Nome": "C",
+          "Estudantes": [
+            {
+              "ID": 4,
+              "Nome": "Diana"
+            },
+            {
+              "ID": 5,
+              "Nome": "Edu"
+            }
+          ],
+          "Diarios": [
+            {
+              "ID": 3,
+              "Disciplina": "Geo.",
+              "Educador": "Leo",
+              "Aulas": [
+                {
+                  "ID": 3,
+                  "DiaSemana": "Sex",
+                  "NumeroAula": 3
+                }
+              ],
+              "Registros": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ID": 3,
+      "Nome": "3 ano",
+      "Turmas": []
+    },
+    {
+      "ID": 4,
+      "Nome": "4 ANO",
+      "Turmas": [
+        {
+          "ID": 4,
+          "Nome": "D",
+          "Estudantes": [
+            {
+              "ID": 6,
+              "Nome": "Andre"
+            }
+          ],
+          "Diarios": [
+            {
+              "ID": 4,
+              "Disciplina": "Portugues",
+              "Educador": "Kixa",
+              "Aulas": [
+                {
+                  "ID": 4,
+                  "DiaSemana": "Qui",
+                  "NumeroAula": 3
+                }
+              ],
+              "Registros": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

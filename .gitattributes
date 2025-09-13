@@ -1,0 +1,30 @@
+# Garante que todos os arquivos de texto usem LF no repositório
+# (mesmo que no Windows eles virem CRLF no checkout)
+* text=auto eol=lf
+
+# C# e arquivos de solução/projeto tratados como texto
+*.cs     text diff=csharp
+*.csproj text
+*.sln    text eol=crlf
+*.props  text
+*.targets text
+
+# Arquivos JSON e XML tratados como texto
+*.json   text
+*.xml    text
+
+# Arquivos de configuração
+*.config text
+*.editorconfig text
+
+# Evitar merges binários estranhos
+*.dll binary
+*.exe binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
