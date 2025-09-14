@@ -1,0 +1,4 @@
+public int? -> pode retornar null ou inteiro;
+int.TryParse -> se da excecao quando nao consegue converter. Retorna True e False;
+SelectMany -> pega a coleção dentro da coleção;
+?? -> é o operador de coalescência nula. Se a esquerda for null retorna a direita;

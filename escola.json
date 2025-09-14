@@ -3,17 +3,65 @@
     {
       "ID": 1,
       "Nome": "1 ano",
-      "Turmas": []
+      "Turmas": [
+        {
+          "ID": 1,
+          "Nome": "A",
+          "Estudantes": [
+            {
+              "ID": 1,
+              "Nome": "Andre"
+            }
+          ],
+          "Diarios": [
+            {
+              "ID": 1,
+              "Disciplina": "Matematica",
+              "Educador": "Andre",
+              "Aulas": [],
+              "Registros": [
+                {
+                  "ID": 1,
+                  "DiarioID": 0,
+                  "Data": "2025-10-12",
+                  "Texto": "tessetete"
+                }
+              ]
+            },
+            {
+              "ID": 2,
+              "Disciplina": "Fisica",
+              "Educador": "Amanda",
+              "Aulas": [],
+              "Registros": []
+            }
+          ]
+        }
+      ]
     },
     {
       "ID": 2,
       "Nome": "2 ano",
-      "Turmas": []
+      "Turmas": [
+        {
+          "ID": 2,
+          "Nome": "B",
+          "Estudantes": [],
+          "Diarios": []
+        }
+      ]
     },
     {
       "ID": 3,
       "Nome": "3 ano",
-      "Turmas": []
+      "Turmas": [
+        {
+          "ID": 3,
+          "Nome": "C",
+          "Estudantes": [],
+          "Diarios": []
+        }
+      ]
     },
     {
       "ID": 4,

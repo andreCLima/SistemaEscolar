@@ -211,7 +211,9 @@ public static class App
 	{
 		Console.Write("Qual o ID Turma: ");
 		if (!int.TryParse(Console.ReadLine(), out var id)) return null;
-		return escola.Series.SelectMany(s => s.Turmas).FirstOrDefault(t => t.ID == id);
+		return escola.Series
+				.SelectMany(s => s.Turmas)
+				.FirstOrDefault(t => t.ID == id);
 	}
 
 	private static void TurmaListar()
@@ -219,6 +221,7 @@ public static class App
 		Console.Clear();
 		Console.WriteLine("----TURMA -> LISTAR----");
 		Console.WriteLine("Id | Turma        | Serie   | Estudante");
+		
 		foreach (var s in escola.Series)
 		{
 			foreach (var t in s.Turmas)
@@ -226,6 +229,7 @@ public static class App
 				Console.WriteLine($"{t.ID,2} | {t.Nome,-12} | {s.Nome,-7} | {t.Estudantes.Count,9}");
 			}
 		}
+
 		Pause();
 	}
 
@@ -396,8 +400,16 @@ public static class App
 		}
 	}
 
-	private static void AulaListar(Turma turma){
+	private static void AulaListar(Turma? turma){
 		Console.Clear();
+
+		if (turma is null)
+		{
+			Console.WriteLine("Turma não encontrada!");
+			Pause();
+			return;
+		}
+
 		Console.WriteLine($"----Turma {turma.Nome} -> Detalhes -> Aulas -> LISTAR----");
 		var aulasTurma = turma.Diarios.SelectMany(d => d.Aulas)
 			.OrderBy(a => a.DiaSemana).ThenBy(a => a.NumeroAula);
@@ -631,20 +643,7 @@ public static class App
 				Console.WriteLine($"{d.Educador} | {d.Disciplina,-10}");
 			}
 		}
-		else
-		{
-			foreach (var s in escola.Series)
-			{
-				foreach (var t in s.Turmas)
-				{
-					foreach (var d in t.Diarios)
-					{
-						Console.WriteLine($"{d.Educador} | {d.Disciplina,-10}");
-					}
-				}
-			}
-		}
-		
+
 		Pause();
 	}
 
@@ -816,8 +815,16 @@ public static class App
 		}
 	}
 
-	private static void EstudanteListar(Turma turma){
+	private static void EstudanteListar(Turma? turma){
 		Console.Clear();
+
+		if (turma is null)
+		{
+			Console.WriteLine("Turma não encontrada!");
+			Pause();
+			return;
+		}
+
 		Console.WriteLine($"----Turma {turma.Nome} -> Detalhes -> Estudantes -> LISTAR----");
 		var alunos = turma.Estudantes.OrderBy(e => e.Nome);
 		Console.WriteLine("ID | Nome");
@@ -952,25 +959,67 @@ public static class App
 		{
 			Console.Clear();
 			Console.WriteLine("----DIARIO----");
-			Console.WriteLine("1- Detalhes");
-			Console.WriteLine("2- Registrar");
+			Console.WriteLine("1- Listar");
+			Console.WriteLine("2- Detalhes");
 			Console.WriteLine("3- Voltar");
 			Console.Write("Escolha: ");
 			var opt = Console.ReadLine();
 			switch (opt)
 			{
-				case "1": ; break;
-				case "2": DiarioRegistrar(); break;
+				case "1": DiarioListarTodos(); break;
+				case "2": DiarioDetalhes(); break;
 				case "3": return;
 			}
 		}	
 	}
 
-	private static void DiarioRegistrar(){
+
+	private static void DiarioListarTodos()
+	{
 		Console.Clear();
-		Console.WriteLine("----DIARIO -> REGISTRAR----");
-		// Primeiro, selecionar a turma
-		var turma = PerguntarTurmaPorId();
+		Console.WriteLine("----DIARIO -> LISTAR TODOS----");
+		Console.WriteLine("Diario | Professor | Turma    | Disciplina");
+		foreach (var s in escola.Series)
+		{
+			foreach (var t in s.Turmas)
+			{
+				foreach (var d in t.Diarios)
+				{
+					Console.WriteLine($"{d.ID,-6} | {d.Educador,-9} | {s.Nome,0} {t.Nome,-2} | {d.Disciplina}");
+				}
+			}
+		}
+		Pause();
+	}
+
+	
+
+	private static Diario? PerguntarDiarioPorId()
+	{
+		Console.Write("Qual o ID Diário: ");
+		if (!int.TryParse(Console.ReadLine(), out var id)) return null;
+		return escola.Series
+				.SelectMany(s => s.Turmas)
+				.SelectMany(t => t.Diarios)
+				.FirstOrDefault(d => d.ID == id);
+	}
+
+	private static void DiarioDetalhes()
+	{
+		Console.Clear();
+		Console.WriteLine("----DIARIO -> DETALHES----");
+		var diario = PerguntarDiarioPorId();
+		if (diario is null)
+		{
+			Console.WriteLine("Diário não encontrada!");
+			Pause();
+			return;
+		}
+
+		var turma = escola.Series
+					.SelectMany(s => s.Turmas)
+					.FirstOrDefault(t => t.Diarios.Contains(diario));
+
 		if (turma is null)
 		{
 			Console.WriteLine("Turma não encontrada!");
@@ -978,38 +1027,36 @@ public static class App
 			return;
 		}
 
-		// Verificar se há diários na turma
-		if (turma.Diarios.Count == 0)
-		{
-			Console.WriteLine("Não há diários cadastrados para esta turma.");
-			Console.WriteLine("Cadastre primeiro um diário para poder registrar informações.");
-			Pause();
-			return;
-		}
+		MenuDiarioDetalhes(turma,diario);
+	}
+	
 
-		// Selecionar o diário
-		Console.WriteLine($"Turma: {turma.Nome}");
-		Console.WriteLine("Selecione o diário para registrar:");
-		Console.WriteLine("ID | Disciplina | Professor");
-		for (int i = 0; i < turma.Diarios.Count; i++)
-		{
-			var diario = turma.Diarios[i];
-			Console.WriteLine($"{i + 1,2} | {diario.Disciplina,-10} | {diario.Educador}");
-		}
-		
-		Console.Write("Escolha o número do diário: ");
-		if (!int.TryParse(Console.ReadLine(), out var idx) || idx < 1 || idx > turma.Diarios.Count)
-		{
-			Console.WriteLine("Seleção inválida!");
-			Pause();
-			return;
-		}
+	private static void MenuDiarioDetalhes(Turma turma, Diario diario)
+	{
+		while (true)
+		{	
+			Console.Clear();
+			Console.WriteLine($"----DIARIO {diario.Educador} {turma.Nome} {diario.Disciplina} -> DETALHES----");
+			Console.WriteLine("1- Calandario");
+			Console.WriteLine("2- Estudantes");
+			Console.WriteLine("3- Registros");
+			Console.WriteLine("4- Voltar");
+			Console.Write("Escolha: ");
+			var opt = Console.ReadLine();
+			switch (opt)
+			{
+				case "1": DiarioListar(turma); break;
+				case "2": EstudanteListar(turma); break;
+				case "3": DiarioRegistrar(turma,diario); break;
+				case "4": return;
+			}
+		}	
+	}
 
-		var diarioSelecionado = turma.Diarios[idx - 1];
+	private static void DiarioRegistrar(Turma turma, Diario diario){
+		Console.Clear();
 		
-		Console.WriteLine();
-		Console.WriteLine($"Diário selecionado: {diarioSelecionado.Disciplina} - {diarioSelecionado.Educador}");
-		Console.WriteLine();
+		Console.WriteLine($"----DIARIO {diario.ID}-{diario.Educador} ({turma.Nome}) {diario.Disciplina} -> DETALHES -> REGISTRAR----");
 		
 		// Solicitar data do registro
 		Console.Write("Data do registro (dd/mm/aaaa): ");
@@ -1049,7 +1096,7 @@ public static class App
 		};
 		
 		// Adicionar o registro ao diário
-		diarioSelecionado.Registros.Add(novoRegistro);
+		diario.Registros.Add(novoRegistro);
 		
 		SaveJSON.Save(escola);
 		Console.WriteLine("Registro adicionado com sucesso!");
