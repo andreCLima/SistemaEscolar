@@ -1,4 +1,11 @@
 public int? -> pode retornar null ou inteiro;
 int.TryParse -> se da excecao quando nao consegue converter. Retorna True e False;
-SelectMany -> pega a coleção dentro da coleção;
 ?? -> é o operador de coalescência nula. Se a esquerda for null retorna a direita;
+LINQ
+    SelectMany -> pega a coleção dentro da coleção;
+    OrderBy -> ordena
+    ToList -> transforma em lista Lista<t>
+    ThenBy -> se houver coincidencia na ordenação, segue mais essa regra
+
+Overload (sobrecarga) = mesmo nome, parâmetros diferentes.
+Override (sobrescrita) = herança, comportamento redefinido.

@@ -11,6 +11,10 @@
             {
               "ID": 1,
               "Nome": "Andre"
+            },
+            {
+              "ID": 2,
+              "Nome": "Ivana"
             }
           ],
           "Diarios": [
@@ -25,6 +29,12 @@
                   "DiarioID": 0,
                   "Data": "2025-10-12",
                   "Texto": "tessetete"
+                },
+                {
+                  "ID": 2,
+                  "DiarioID": 0,
+                  "Data": "2025-09-14",
+                  "Texto": "terminado o menu de registros"
                 }
               ]
             },
@@ -32,8 +42,21 @@
               "ID": 2,
               "Disciplina": "Fisica",
               "Educador": "Amanda",
-              "Aulas": [],
-              "Registros": []
+              "Aulas": [
+                {
+                  "ID": 1,
+                  "DiaSemana": "Ter",
+                  "NumeroAula": 2
+                }
+              ],
+              "Registros": [
+                {
+                  "ID": 3,
+                  "DiarioID": 0,
+                  "Data": "2025-09-14",
+                  "Texto": "teste"
+                }
+              ]
             }
           ]
         }
@@ -47,7 +70,21 @@
           "ID": 2,
           "Nome": "B",
           "Estudantes": [],
-          "Diarios": []
+          "Diarios": [
+            {
+              "ID": 3,
+              "Disciplina": "Portugues",
+              "Educador": "Ivana",
+              "Aulas": [
+                {
+                  "ID": 2,
+                  "DiaSemana": "Qui",
+                  "NumeroAula": 6
+                }
+              ],
+              "Registros": []
+            }
+          ]
         }
       ]
     },

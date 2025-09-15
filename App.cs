@@ -67,9 +67,11 @@ public static class App
 		while (true)
 		{
 			Console.Clear();
+			Console.WriteLine("----SISTEMA ESCOLAR----");
 			Console.WriteLine("1- Escola");
 			Console.WriteLine("2- Turma");
 			Console.WriteLine("3- Diario");
+			Console.WriteLine("4- SAIR");
 			Console.Write("Escolha: ");
 			var opt = Console.ReadLine();
 			switch (opt)
@@ -99,7 +101,7 @@ public static class App
 				case "1": EscolaResumo(); break;
 				case "2": EscolaCadastrarSerie(); break;
 				case "3": EscolaDetalhes(); break;
-				case "4": return;
+				default: return;
 			}
 		}
 	}
@@ -202,7 +204,7 @@ public static class App
 				case "3": TurmaCadastrar(); break;
 				case "4": TurmaAlterar(); break;
 				case "5": TurmaExcluir(); break;
-				case "6": return;
+				default: return;
 			}
 		}
 	}
@@ -371,7 +373,7 @@ public static class App
 				case "1": MenuTurmaAulas(turma); break;
 				case "2": MenuTurmaDiarios(turma); break;
 				case "3": MenuTurmaEstudantes(turma); break;
-				case "4": return;
+				default: return;
 			}
 		}
 	}
@@ -395,12 +397,12 @@ public static class App
 				case "2": AulaCadastrar(turma); break;
 				case "3": AulaAlterar(turma); break;
 				case "4": AulaExcluir(turma); break;
-				case "5": return;
+				default: return;
 			}
 		}
 	}
 
-	private static void AulaListar(Turma? turma){
+	private static void AulaListar(Turma turma){
 		Console.Clear();
 
 		if (turma is null)
@@ -421,6 +423,8 @@ public static class App
 		}
 		Pause();
 	}
+
+	
 
 	private static void AulaCadastrar(Turma turma){
 		Console.Clear();
@@ -624,7 +628,7 @@ public static class App
 				case "2": DiarioCadastrar(turma); break;
 				case "3": DiarioAlterar(turma); break;
 				case "4": DiarioExcluir(turma); break;
-				case "5": return;
+				default: return;
 			}
 		}
 	}
@@ -810,7 +814,7 @@ public static class App
 				case "2": EstudanteCadastrar(turma); break;
 				case "3": EstudanteAlterar(turma); break;
 				case "4": EstudanteExcluir(turma); break;
-				case "5": return;
+				default: return;
 			}
 		}
 	}
@@ -968,7 +972,7 @@ public static class App
 			{
 				case "1": DiarioListarTodos(); break;
 				case "2": DiarioDetalhes(); break;
-				case "3": return;
+				default: return;
 			}
 		}	
 	}
@@ -1045,15 +1049,62 @@ public static class App
 			var opt = Console.ReadLine();
 			switch (opt)
 			{
-				case "1": DiarioListar(turma); break;
+				case "1": AulaListar(turma, diario); break;
 				case "2": EstudanteListar(turma); break;
-				case "3": DiarioRegistrar(turma,diario); break;
-				case "4": return;
+				case "3": MenuRegistros(turma, diario); break;
+				default: return;
 			}
 		}	
 	}
 
-	private static void DiarioRegistrar(Turma turma, Diario diario){
+	private static void AulaListar(Turma turma, Diario diario){
+		Console.Clear();
+		Console.WriteLine($"----DIARIO {diario.Educador} {turma.Nome} {diario.Disciplina} -> DETALHES -> CALENDARIO----");
+		
+		var aulasDiario = diario.Aulas
+					      .OrderBy(a => a.DiaSemana)
+						  .ThenBy(a => a.NumeroAula);
+		
+		Console.WriteLine("Dia | Nº | Disciplina | Professor");
+	    foreach (var a in aulasDiario)
+		{
+			Console.WriteLine($"{a.DiaSemana,-3} | {a.NumeroAula,1} | {diario.Disciplina,-10} | {diario.Educador}");
+		}
+		Pause();
+	}
+
+	private static void MenuRegistros(Turma turma, Diario diario)
+	{
+		while (true)
+		{	
+			Console.Clear();
+			Console.WriteLine($"----DIARIO {diario.Educador} {turma.Nome} {diario.Disciplina} -> DETALHES -> REGISTROS----");
+			Console.WriteLine("1- Listar");
+			Console.WriteLine("2- Registrar");
+			Console.WriteLine("3- Voltar");
+			Console.Write("Escolha: ");
+			var opt = Console.ReadLine();
+			switch (opt)
+			{
+				case "1": RegistroListar(turma, diario); break;
+				case "2": NovoRegistro(turma, diario); break;
+				default: return;
+			}
+		}	
+	}
+
+	private static void RegistroListar(Turma turma, Diario diario){
+		Console.Clear();
+		Console.WriteLine($"----DIARIO {diario.ID}-{diario.Educador} ({turma.Nome}) {diario.Disciplina} -> DETALHES -> REGISTROS -> LISTAR----");
+		Console.WriteLine("ID     | Data       | Texto");
+		foreach (var r in diario.Registros)
+		{
+			Console.WriteLine($"{r.ID,-6} | {r.Data,-10} | {r.Texto,-10}");
+		}
+		Pause();
+	}
+
+	private static void NovoRegistro(Turma turma, Diario diario){
 		Console.Clear();
 		
 		Console.WriteLine($"----DIARIO {diario.ID}-{diario.Educador} ({turma.Nome}) {diario.Disciplina} -> DETALHES -> REGISTRAR----");
