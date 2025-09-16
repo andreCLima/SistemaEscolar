@@ -1,0 +1,78 @@
+@page "/diario"
+@rendermode InteractiveServer
+@using SistemaEscolarWeb.Services
+@using SistemaEscolarWeb.Models
+@inject EscolaService EscolaService
+@inject NavigationManager Navigation
+
+<PageTitle>Diário</PageTitle>
+
+<div class="container-fluid">
+    <h1 class="mb-4">Diários</h1>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Educadores e seus Diários</h5>
+        </div>
+        <div class="card-body">
+            @if (educadores.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Educador</th>
+                                <th>Disciplina</th>
+                                <th>Turma</th>
+                                <th>Série</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var educador in educadores)
+                            {
+                                var turma = EscolaService.GetEscola().Series
+                                    .SelectMany(s => s.Turmas)
+                                    .FirstOrDefault(t => t.Diarios.Contains(educador));
+                                var serie = EscolaService.GetEscola().Series
+                                    .FirstOrDefault(s => s.Turmas.Contains(turma));
+                                
+                                <tr>
+                                    <td>@educador.Educador</td>
+                                    <td>@educador.Disciplina</td>
+                                    <td>@(turma?.Nome ?? "N/A")</td>
+                                    <td>@(serie?.Nome ?? "N/A")</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info" @onclick="() => VerDetalhes(educador.ID)">
+                                            <i class="bi bi-eye"></i> Ver Diários
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <p class="text-muted">Nenhum diário cadastrado.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Diario> educadores = new();
+
+    protected override void OnInitialized()
+    {
+        educadores = EscolaService.DiarioListarTodos();
+    }
+
+    private void VerDetalhes(int diarioId)
+    {
+        Navigation.NavigateTo($"/diario/detalhes/{diarioId}");
+    }
+}

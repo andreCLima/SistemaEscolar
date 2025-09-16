@@ -1,0 +1,688 @@
+@page "/turma/detalhes/{TurmaId:int}"
+@rendermode InteractiveServer
+@using SistemaEscolarWeb.Models
+@using SistemaEscolarWeb.Services
+
+@inject EscolaService EscolaService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Detalhes da Turma</PageTitle>
+
+<div class="container-fluid">
+    @if (turma != null)
+    {
+        var serie = EscolaService.GetEscola().Series.FirstOrDefault(s => s.Turmas.Contains(turma));
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Turma: @turma.Nome (@(serie?.Nome ?? "Série não encontrada"))</h1>
+            <button class="btn btn-secondary" @onclick="@(() => Navigation.NavigateTo("/turma"))">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </button>
+        </div>
+
+        <!-- Tabela de Horários -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Horários</h5>
+                <div>
+                    <button class="btn btn-sm btn-primary me-2" @onclick="@(() => CadastrarAula())">
+                        <i class="bi bi-plus-circle"></i> Cadastrar Aula
+                    </button>
+                    <button class="btn btn-sm btn-warning me-2" @onclick="@(() => AlterarAula())">
+                        <i class="bi bi-pencil"></i> Alterar Aula
+                    </button>
+                    <button class="btn btn-sm btn-danger" @onclick="@(() => ExcluirAula())">
+                        <i class="bi bi-trash"></i> Excluir Aula
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                @{
+                    var diasSemana = new[] { "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab" };
+                    var aulasTurma = turma.Diarios.SelectMany(d => d.Aulas)
+                        .OrderBy(a => a.DiaSemana).ThenBy(a => a.NumeroAula).ToList();
+                }
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-dark">
+                            <tr>
+                                @foreach (var dia in diasSemana)
+                                {
+                                    <th class="text-center">@dia</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 1; i <= 7; i++)
+                            {
+                                <tr>
+                                    @foreach (var dia in diasSemana)
+                                    {
+                                        var aula = aulasTurma.FirstOrDefault(a => a.DiaSemana == dia && a.NumeroAula == i);
+                                        <td class="text-center @(aula == null ? "table-cell-clickable" : "")" 
+                                            @onclick="@(() => ClicarCelulaHorario(dia, i))"
+                                            style="@(aula == null ? "cursor: pointer; background-color: #f8f9fa;" : "")">
+                                            @if (aula != null)
+                                            {
+                                                var diario = turma.Diarios.FirstOrDefault(d => d.Aulas.Contains(aula));
+                                                <div class="small">
+                                                    <strong>@diario?.Disciplina</strong><br/>
+                                                    <small>@diario?.Educador</small>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">+</span>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Diários -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Diários</h5>
+                <div>
+                    <button class="btn btn-sm btn-primary me-2" @onclick="@(() => CadastrarDiario())">
+                        <i class="bi bi-plus-circle"></i> Cadastrar Diário
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Professor</th>
+                                <th>Disciplina</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var diario in turma.Diarios)
+                            {
+                                <tr>
+                                    <td>@diario.Educador</td>
+                                    <td>@diario.Disciplina</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info me-2" @onclick="@(() => VerDiario(diario.ID))">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </button>
+                                        <button class="btn btn-sm btn-warning me-2" @onclick="@(() => AlterarDiario(diario.ID))">
+                                            <i class="bi bi-pencil"></i> Alterar
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" @onclick="@(() => ExcluirDiario(diario.ID))">
+                                            <i class="bi bi-trash"></i> Excluir
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Estudantes -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Estudantes</h5>
+                <div>
+                    <button class="btn btn-sm btn-primary me-2" @onclick="@(() => CadastrarEstudante())">
+                        <i class="bi bi-plus-circle"></i> Cadastrar Estudante
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var estudante in turma.Estudantes.OrderBy(e => e.Nome))
+                            {
+                                <tr>
+                                    <td>@estudante.ID</td>
+                                    <td>@estudante.Nome</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning me-2" @onclick="@(() => AlterarEstudante(estudante.ID))">
+                                            <i class="bi bi-pencil"></i> Alterar
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" @onclick="@(() => ExcluirEstudante(estudante.ID))">
+                                            <i class="bi bi-trash"></i> Excluir
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger">
+            <h4>Turma não encontrada!</h4>
+            <p>A turma solicitada não foi encontrada.</p>
+            <button class="btn btn-secondary" @onclick="@(() => Navigation.NavigateTo("/turma"))">
+                <i class="bi bi-arrow-left"></i> Voltar para Lista
+            </button>
+        </div>
+    }
+</div>
+
+<!-- Modal para Cadastro de Aula -->
+@if (mostrarModalCadastroAula)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cadastrar Aula</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalCadastroAula"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Dia da Semana</label>
+                            <input type="text" class="form-control" value="@diaSemanaSelecionado" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Número da Aula</label>
+                            <input type="text" class="form-control" value="@numeroAulaSelecionado" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="diarioAula" class="form-label">Diário *</label>
+                            <select class="form-select" id="diarioAula" @bind="diarioSelecionado" required>
+                                <option value="0">Selecione um diário</option>
+                                @if (turma != null)
+                                {
+                                    @foreach (var diario in turma.Diarios)
+                                    {
+                                        <option value="@diario.ID">@diario.Disciplina - @diario.Educador</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModalCadastroAula">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="SalvarAula">
+                        <i class="bi bi-check-circle"></i> Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal para Cadastro de Diário -->
+@if (mostrarModalCadastroDiario)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cadastrar Novo Diário</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalCadastroDiario"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="disciplinaDiario" class="form-label">Disciplina *</label>
+                            <input type="text" class="form-control" id="disciplinaDiario" @bind="disciplinaDiario" 
+                                   placeholder="Ex: Matemática, Português, Geografia, etc." required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="educadorDiario" class="form-label">Educador/Professor *</label>
+                            <input type="text" class="form-control" id="educadorDiario" @bind="educadorDiario" 
+                                   placeholder="Nome do professor" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModalCadastroDiario">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="SalvarDiario">
+                        <i class="bi bi-check-circle"></i> Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal para Alteração de Diário -->
+@if (mostrarModalAlteracaoDiario)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Alterar Diário</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalAlteracaoDiario"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="disciplinaAlteracao" class="form-label">Disciplina *</label>
+                            <input type="text" class="form-control" id="disciplinaAlteracao" @bind="disciplinaAlteracao" 
+                                   placeholder="Ex: Matemática, Português, Geografia, etc." required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="educadorAlteracao" class="form-label">Educador/Professor *</label>
+                            <input type="text" class="form-control" id="educadorAlteracao" @bind="educadorAlteracao" 
+                                   placeholder="Nome do professor" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModalAlteracaoDiario">Cancelar</button>
+                    <button type="button" class="btn btn-warning" @onclick="SalvarAlteracaoDiario">
+                        <i class="bi bi-check-circle"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal para Cadastro de Estudante -->
+@if (mostrarModalCadastroEstudante)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cadastrar Novo Estudante</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalCadastroEstudante"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="nomeEstudante" class="form-label">Nome do Estudante *</label>
+                            <input type="text" class="form-control" id="nomeEstudante" @bind="nomeEstudante" 
+                                   placeholder="Digite o nome completo do estudante" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModalCadastroEstudante">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="SalvarEstudante">
+                        <i class="bi bi-check-circle"></i> Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal para Alteração de Estudante -->
+@if (mostrarModalAlteracaoEstudante)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Alterar Estudante</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalAlteracaoEstudante"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="nomeAlteracao" class="form-label">Nome do Estudante *</label>
+                            <input type="text" class="form-control" id="nomeAlteracao" @bind="nomeAlteracao" 
+                                   placeholder="Digite o nome completo do estudante" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModalAlteracaoEstudante">Cancelar</button>
+                    <button type="button" class="btn btn-warning" @onclick="SalvarAlteracaoEstudante">
+                        <i class="bi bi-check-circle"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] 
+    public int TurmaId { get; set; }
+    private Models.Turma? turma;
+    private bool mostrarModalCadastroAula = false;
+    private string diaSemanaSelecionado = string.Empty;
+    private int numeroAulaSelecionado = 0;
+    private int diarioSelecionado = 0;
+    private bool mostrarModalCadastroDiario = false;
+    private string disciplinaDiario = string.Empty;
+    private string educadorDiario = string.Empty;
+    private bool mostrarModalAlteracaoDiario = false;
+    private int diarioIdAlteracao = 0;
+    private string disciplinaAlteracao = string.Empty;
+    private string educadorAlteracao = string.Empty;
+    private bool mostrarModalCadastroEstudante = false;
+    private string nomeEstudante = string.Empty;
+    private bool mostrarModalAlteracaoEstudante = false;
+    private int estudanteIdAlteracao = 0;
+    private string nomeAlteracao = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        turma = EscolaService.GetTurmaPorId(TurmaId);
+    }
+
+    private void CadastrarAula()
+    {
+        JSRuntime.InvokeVoidAsync("alert", "Clique em uma célula vazia da tabela de horários para cadastrar uma aula");
+    }
+
+    private void ClicarCelulaHorario(string dia, int numeroAula)
+    {
+        // Verificar se já existe uma aula neste horário
+        var aulaExistente = turma?.Diarios.SelectMany(d => d.Aulas)
+            .FirstOrDefault(a => a.DiaSemana == dia && a.NumeroAula == numeroAula);
+        
+        if (aulaExistente != null)
+        {
+            JSRuntime.InvokeVoidAsync("alert", "Já existe uma aula neste horário. Use a função de alterar para modificar.");
+            return;
+        }
+
+        // Verificar se existem diários cadastrados
+        if (turma?.Diarios.Count == 0)
+        {
+            JSRuntime.InvokeVoidAsync("alert", "Não há diários cadastrados. Cadastre um diário primeiro.");
+            return;
+        }
+
+        diaSemanaSelecionado = dia;
+        numeroAulaSelecionado = numeroAula;
+        diarioSelecionado = 0;
+        mostrarModalCadastroAula = true;
+    }
+
+    private void FecharModalCadastroAula()
+    {
+        mostrarModalCadastroAula = false;
+        diaSemanaSelecionado = string.Empty;
+        numeroAulaSelecionado = 0;
+        diarioSelecionado = 0;
+    }
+
+    private async Task SalvarAula()
+    {
+        if (diarioSelecionado == 0)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Por favor, selecione um diário.");
+            return;
+        }
+
+        try
+        {
+            EscolaService.CadastrarAula(diarioSelecionado, diaSemanaSelecionado, numeroAulaSelecionado);
+            
+            // Atualizar a turma para refletir as mudanças
+            turma = EscolaService.GetTurmaPorId(TurmaId);
+            FecharModalCadastroAula();
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", "Aula cadastrada com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar aula: {ex.Message}");
+        }
+    }
+
+    private void AlterarAula()
+    {
+        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
+    }
+
+    private void ExcluirAula()
+    {
+        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
+    }
+
+    private void CadastrarDiario()
+    {
+        disciplinaDiario = string.Empty;
+        educadorDiario = string.Empty;
+        mostrarModalCadastroDiario = true;
+    }
+
+    private void FecharModalCadastroDiario()
+    {
+        mostrarModalCadastroDiario = false;
+        disciplinaDiario = string.Empty;
+        educadorDiario = string.Empty;
+    }
+
+    private async Task SalvarDiario()
+    {
+        if (string.IsNullOrWhiteSpace(disciplinaDiario) || string.IsNullOrWhiteSpace(educadorDiario))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha todos os campos obrigatórios.");
+            return;
+        }
+
+        try
+        {
+            EscolaService.CadastrarDiario(TurmaId, disciplinaDiario, educadorDiario);
+            
+            // Atualizar a turma para refletir as mudanças
+            turma = EscolaService.GetTurmaPorId(TurmaId);
+            FecharModalCadastroDiario();
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", "Diário cadastrado com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar diário: {ex.Message}");
+        }
+    }
+
+    private void AlterarDiario(int diarioId)
+    {
+        var diario = EscolaService.GetDiarioPorId(diarioId);
+        if (diario != null)
+        {
+            diarioIdAlteracao = diarioId;
+            disciplinaAlteracao = diario.Disciplina;
+            educadorAlteracao = diario.Educador;
+            mostrarModalAlteracaoDiario = true;
+        }
+    }
+
+    private void FecharModalAlteracaoDiario()
+    {
+        mostrarModalAlteracaoDiario = false;
+        diarioIdAlteracao = 0;
+        disciplinaAlteracao = string.Empty;
+        educadorAlteracao = string.Empty;
+    }
+
+    private async Task SalvarAlteracaoDiario()
+    {
+        if (string.IsNullOrWhiteSpace(disciplinaAlteracao) || string.IsNullOrWhiteSpace(educadorAlteracao))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha todos os campos obrigatórios.");
+            return;
+        }
+
+        try
+        {
+            EscolaService.AlterarDiario(diarioIdAlteracao, disciplinaAlteracao, educadorAlteracao);
+            
+            // Atualizar a turma para refletir as mudanças
+            turma = EscolaService.GetTurmaPorId(TurmaId);
+            FecharModalAlteracaoDiario();
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", "Diário alterado com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar diário: {ex.Message}");
+        }
+    }
+
+    private async Task ExcluirDiario(int diarioId)
+    {
+        var diario = EscolaService.GetDiarioPorId(diarioId);
+        if (diario != null)
+        {
+            var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
+                $"Deseja realmente excluir o diário '{diario.Disciplina}' do professor '{diario.Educador}'?\n\n" +
+                "ATENÇÃO: Esta ação também excluirá todas as aulas e registros associados a este diário!");
+            
+            if (confirmacao)
+            {
+                try
+                {
+                    EscolaService.ExcluirDiario(diarioId);
+                    
+                    // Atualizar a turma para refletir as mudanças
+                    turma = EscolaService.GetTurmaPorId(TurmaId);
+                    StateHasChanged();
+                    await JSRuntime.InvokeVoidAsync("alert", "Diário excluído com sucesso!");
+                }
+                catch (Exception ex)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir diário: {ex.Message}");
+                }
+            }
+        }
+    }
+
+    private void CadastrarEstudante()
+    {
+        nomeEstudante = string.Empty;
+        mostrarModalCadastroEstudante = true;
+    }
+
+    private void FecharModalCadastroEstudante()
+    {
+        mostrarModalCadastroEstudante = false;
+        nomeEstudante = string.Empty;
+    }
+
+    private async Task SalvarEstudante()
+    {
+        if (string.IsNullOrWhiteSpace(nomeEstudante))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome do estudante.");
+            return;
+        }
+
+        try
+        {
+            EscolaService.CadastrarEstudante(TurmaId, nomeEstudante);
+            
+            // Atualizar a turma para refletir as mudanças
+            turma = EscolaService.GetTurmaPorId(TurmaId);
+            FecharModalCadastroEstudante();
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", "Estudante cadastrado com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar estudante: {ex.Message}");
+        }
+    }
+
+    private void AlterarEstudante(int? estudanteId = null)
+    {
+        if (estudanteId.HasValue)
+        {
+            var estudante = turma?.Estudantes.FirstOrDefault(e => e.ID == estudanteId.Value);
+            if (estudante != null)
+            {
+                estudanteIdAlteracao = estudanteId.Value;
+                nomeAlteracao = estudante.Nome;
+                mostrarModalAlteracaoEstudante = true;
+            }
+        }
+    }
+
+    private void FecharModalAlteracaoEstudante()
+    {
+        mostrarModalAlteracaoEstudante = false;
+        estudanteIdAlteracao = 0;
+        nomeAlteracao = string.Empty;
+    }
+
+    private async Task SalvarAlteracaoEstudante()
+    {
+        if (string.IsNullOrWhiteSpace(nomeAlteracao))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome do estudante.");
+            return;
+        }
+
+        try
+        {
+            EscolaService.AlterarEstudante(estudanteIdAlteracao, nomeAlteracao);
+            
+            // Atualizar a turma para refletir as mudanças
+            turma = EscolaService.GetTurmaPorId(TurmaId);
+            FecharModalAlteracaoEstudante();
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", "Estudante alterado com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar estudante: {ex.Message}");
+        }
+    }
+
+    private async Task ExcluirEstudante(int? estudanteId = null)
+    {
+        if (estudanteId.HasValue)
+        {
+            var estudante = turma?.Estudantes.FirstOrDefault(e => e.ID == estudanteId.Value);
+            if (estudante != null)
+            {
+                var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
+                    $"Deseja realmente excluir o estudante '{estudante.Nome}'?\n\n" +
+                    "ATENÇÃO: Esta ação não pode ser desfeita!");
+                
+                if (confirmacao)
+                {
+                    try
+                    {
+                        EscolaService.ExcluirEstudante(estudanteId.Value);
+                        
+                        // Atualizar a turma para refletir as mudanças
+                        turma = EscolaService.GetTurmaPorId(TurmaId);
+                        StateHasChanged();
+                        await JSRuntime.InvokeVoidAsync("alert", "Estudante excluído com sucesso!");
+                    }
+                    catch (Exception ex)
+                    {
+                        await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir estudante: {ex.Message}");
+                    }
+                }
+            }
+        }
+    }
+
+    private void VerDiario(int diarioId)
+    {
+        Navigation.NavigateTo($"/diario/detalhes/{diarioId}");
+    }
+}

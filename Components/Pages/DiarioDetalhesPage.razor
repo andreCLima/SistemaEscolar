@@ -1,0 +1,422 @@
+@page "/diario/detalhes/{DiarioId:int}"
+@rendermode InteractiveServer
+@using SistemaEscolarWeb.Services
+@using SistemaEscolarWeb.Models
+@inject EscolaService EscolaService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Detalhes do Diário</PageTitle>
+
+<div class="container-fluid">
+    @if (diario != null)
+    {
+        var turma = EscolaService.GetEscola().Series
+            .SelectMany(s => s.Turmas)
+            .FirstOrDefault(t => t.Diarios.Contains(diario));
+        var serie = EscolaService.GetEscola().Series
+            .FirstOrDefault(s => s.Turmas.Contains(turma));
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Diário: @diario.Educador - @diario.Disciplina</h1>
+            <button class="btn btn-secondary" @onclick="@(() => Navigation.NavigateTo("/diario"))">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Informações do Diário</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Professor:</strong> @diario.Educador</p>
+                        <p><strong>Disciplina:</strong> @diario.Disciplina</p>
+                        <p><strong>Turma:</strong> @(turma?.Nome ?? "N/A")</p>
+                        <p><strong>Série:</strong> @(serie?.Nome ?? "N/A")</p>
+                        <p><strong>Total de Registros:</strong> @diario.Registros.Count</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Ações</h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-primary me-2 mb-2" @onclick="@(() => CadastrarAula())">
+                            <i class="bi bi-plus-circle"></i> Cadastrar Aula
+                        </button>
+                        <button class="btn btn-warning me-2 mb-2" @onclick="@(() => AlterarAula())">
+                            <i class="bi bi-pencil"></i> Alterar Aula
+                        </button>
+                        <button class="btn btn-danger me-2 mb-2" @onclick="@(() => ExcluirAula())">
+                            <i class="bi bi-trash"></i> Excluir Aula
+                        </button>
+                        <br/>
+                        <button class="btn btn-success me-2 mb-2" @onclick="@(() => NovoRegistro())">
+                            <i class="bi bi-plus-circle"></i> Novo Registro
+                        </button>
+                        <button class="btn btn-info" @onclick="@(() => VerRegistros())">
+                            <i class="bi bi-list"></i> Ver Registros
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendário de Aulas e Lista de Estudantes -->
+        <div class="row mt-4">
+            <!-- Calendário de Aulas - Lado Esquerdo -->
+            <div class="col-md-5">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Calendário de Aulas</h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary me-2" @onclick="@(() => MesAnterior())">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="@(() => MesProximo())">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-2">
+                            <strong>@dataAtual.ToString("MMMM yyyy")</strong>
+                        </div>
+                        
+                        @{
+                            var diasSemana = new[] { "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab" };
+                            var primeiroDiaMes = new DateTime(dataAtual.Year, dataAtual.Month, 1);
+                            var ultimoDiaMes = primeiroDiaMes.AddMonths(1).AddDays(-1);
+                            var primeiroDiaSemana = (int)primeiroDiaMes.DayOfWeek;
+                            var diasNoMes = ultimoDiaMes.Day;
+                        }
+                        
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-sm">
+                                <thead class="table-dark">
+                                    <tr>
+                                        @foreach (var dia in diasSemana)
+                                        {
+                                            <th class="text-center" style="font-size: 0.8rem;">@dia</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var diaAtual = 1;
+                                        var semanaAtual = 0;
+                                    }
+                                    @while (diaAtual <= diasNoMes || semanaAtual == 0)
+                                    {
+                                        <tr>
+                                            @for (int diaSemana = 0; diaSemana < 7; diaSemana++)
+                                            {
+                                                var diaDoMes = 0;
+                                                var temAula = false;
+                                                
+                                                if (semanaAtual == 0 && diaSemana >= primeiroDiaSemana)
+                                                {
+                                                    diaDoMes = diaAtual;
+                                                    diaAtual++;
+                                                }
+                                                else if (semanaAtual > 0 && diaAtual <= diasNoMes)
+                                                {
+                                                    diaDoMes = diaAtual;
+                                                    diaAtual++;
+                                                }
+                                                
+                                                if (diaDoMes > 0)
+                                                {
+                                                    var dataDia = new DateTime(dataAtual.Year, dataAtual.Month, diaDoMes);
+                                                    var nomeDiaSemana = diasSemana[(int)dataDia.DayOfWeek];
+                                                    temAula = diasSemanaComAulas.Contains(nomeDiaSemana);
+                                                }
+                                                
+                                                <td class="text-center @(temAula ? "table-success" : "table-light")" 
+                                                    style="@(diaDoMes == 0 ? "background-color: #f8f9fa;" : "")"
+                                                    @onclick="@(() => ClicarDiaAula(diaDoMes, temAula))">
+                                                    @if (diaDoMes > 0)
+                                                    {
+                                                        <div class="@(temAula ? "fw-bold text-primary" : "text-muted") @(temAula ? "cursor-pointer" : "")" 
+                                                             style="font-size: 0.9rem; @(temAula ? "cursor: pointer;" : "")">
+                                                            @diaDoMes
+                                                            @if (temAula)
+                                                            {
+                                                                <br/><small class="text-success" style="font-size: 0.7rem;">Clique para registrar</small>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </td>
+                                            }
+                                        </tr>
+                                        semanaAtual++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        @if (diasSemanaComAulas.Any())
+                        {
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <strong>Dias com aulas:</strong><br/>
+                                    @string.Join(", ", diasSemanaComAulas)
+                                </small>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mt-2">
+                                <div class="alert alert-warning mb-0" style="font-size: 0.8rem;">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    Nenhuma aula cadastrada.
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Estudantes - Lado Direito -->
+            <div class="col-md-7">
+                @if (turma != null && turma.Estudantes.Any())
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Estudantes da Turma (@turma.Estudantes.Count)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nome</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var estudante in turma.Estudantes.OrderBy(e => e.Nome))
+                                        {
+                                            <tr>
+                                                <td>@estudante.ID</td>
+                                                <td>@estudante.Nome</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Estudantes da Turma</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle"></i>
+                                Nenhum estudante cadastrado nesta turma.
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Registros -->
+        @if (diario.Registros.Any())
+        {
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Registros</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Data</th>
+                                    <th>Texto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var registro in diario.Registros.OrderByDescending(r => r.Data))
+                                {
+                                    <tr>
+                                        <td>@registro.ID</td>
+                                        <td>@registro.Data.ToString("dd/MM/yyyy")</td>
+                                        <td>@registro.Texto</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-danger">
+            <h4>Diário não encontrado!</h4>
+            <p>O diário solicitado não foi encontrado.</p>
+            <button class="btn btn-secondary" @onclick="@(() => Navigation.NavigateTo("/diario"))">
+                <i class="bi bi-arrow-left"></i> Voltar para Lista
+            </button>
+        </div>
+    }
+</div>
+
+<!-- Modal para Cadastro de Registro -->
+@if (mostrarModalRegistro)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Novo Registro</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalRegistro"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Data</label>
+                            <input type="date" class="form-control" @bind="dataSelecionada" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="textoRegistro" class="form-label">Registro *</label>
+                            <textarea class="form-control" id="textoRegistro" @bind="textoRegistro" 
+                                      rows="4" placeholder="Digite o conteúdo do registro..." required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModalRegistro">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="SalvarRegistro">
+                        <i class="bi bi-check-circle"></i> Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int DiarioId { get; set; }
+    private Diario? diario;
+    private DateTime dataAtual = DateTime.Now;
+    private List<string> diasSemanaComAulas = new();
+    private bool mostrarModalRegistro = false;
+    private DateTime dataSelecionada = DateTime.Now;
+    private string textoRegistro = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        diario = EscolaService.GetDiarioPorId(DiarioId);
+        if (diario != null)
+        {
+            diasSemanaComAulas = diario.Aulas
+                .Select(a => a.DiaSemana)
+                .Distinct()
+                .ToList();
+        }
+    }
+
+    private void CadastrarAula()
+    {
+        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
+    }
+
+    private void AlterarAula()
+    {
+        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
+    }
+
+    private void ExcluirAula()
+    {
+        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
+    }
+
+    private void NovoRegistro()
+    {
+        dataSelecionada = DateTime.Now;
+        textoRegistro = string.Empty;
+        mostrarModalRegistro = true;
+    }
+
+    private void ClicarDiaAula(int diaDoMes, bool temAula)
+    {
+        if (!temAula || diaDoMes == 0)
+        {
+            return; // Não faz nada se não tem aula ou é dia inválido
+        }
+
+        dataSelecionada = new DateTime(dataAtual.Year, dataAtual.Month, diaDoMes);
+        textoRegistro = string.Empty;
+        mostrarModalRegistro = true;
+    }
+
+    private void FecharModalRegistro()
+    {
+        mostrarModalRegistro = false;
+        dataSelecionada = DateTime.Now;
+        textoRegistro = string.Empty;
+    }
+
+    private async Task SalvarRegistro()
+    {
+        if (string.IsNullOrWhiteSpace(textoRegistro))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o texto do registro.");
+            return;
+        }
+
+        try
+        {
+            // Criar novo registro
+            var novoRegistro = new Registro
+            {
+                ID = diario.Registros.Count == 0 ? 1 : diario.Registros.Max(r => r.ID) + 1,
+                DiarioID = diario.ID,
+                Data = DateOnly.FromDateTime(dataSelecionada),
+                Texto = textoRegistro
+            };
+
+            diario.Registros.Add(novoRegistro);
+            EscolaService.Save();
+            
+            FecharModalRegistro();
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", "Registro salvo com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao salvar registro: {ex.Message}");
+        }
+    }
+
+    private void VerRegistros()
+    {
+        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
+    }
+
+    private void MesAnterior()
+    {
+        dataAtual = dataAtual.AddMonths(-1);
+        StateHasChanged();
+    }
+
+    private void MesProximo()
+    {
+        dataAtual = dataAtual.AddMonths(1);
+        StateHasChanged();
+    }
+}

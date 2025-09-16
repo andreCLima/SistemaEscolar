@@ -1,0 +1,143 @@
+@page "/"
+@rendermode InteractiveServer
+@using SistemaEscolarWeb.Services
+@using SistemaEscolarWeb.Models
+@inject EscolaService EscolaService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Escola</PageTitle>
+
+<div class="container-fluid">
+
+    <div class="jumbotron bg-primary text-white p-5 rounded mb-4">
+        <h1 class="display-4">Sistema Escolar</h1>
+        <p class="lead">Seja Bem-vindo</p>
+        <hr class="my-4">
+    </div>
+
+    <div class="row">
+        <!-- Resumo -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Resumo</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Quantidade de Turmas por Série:</h6>
+                    <ul class="list-unstyled">
+                        @foreach (var serie in EscolaService.GetEscola().Series)
+                        {
+                            <li><strong>@serie.Nome:</strong> @serie.Turmas.Count turmas</li>
+                        }
+                    </ul>
+                    
+                    <h6 class="mt-3">Quantidade de Estudantes por Série:</h6>
+                    <ul class="list-unstyled">
+                        @foreach (var serie in EscolaService.GetEscola().Series)
+                        {
+                            var qtEst = serie.Turmas.Sum(t => t.Estudantes.Count);
+                            <li><strong>@serie.Nome:</strong> @qtEst estudantes</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cadastrar Série -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Cadastrar Série</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="nomeSerie" class="form-label">Nome da Série:</label>
+                        <input type="text" class="form-control" id="nomeSerie" @bind="novaSerie" placeholder="Ex: 4º ano" />
+                    </div>
+                    <button class="btn btn-primary" @onclick="CadastrarSerie" disabled="@(string.IsNullOrWhiteSpace(novaSerie))">
+                        Cadastrar Série
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalhes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Detalhes da Escola</h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var escola = EscolaService.GetEscola();
+                        var totalTurmas = escola.Series.Sum(s => s.Turmas.Count);
+                        var totalEstudantes = escola.Series.Sum(s => s.Turmas.Sum(t => t.Estudantes.Count));
+                        var totalDiarios = escola.Series.Sum(s => s.Turmas.Sum(t => t.Diarios.Count));
+                        var totalAulas = escola.Series.Sum(s => s.Turmas.Sum(t => t.Diarios.Sum(d => d.Aulas.Count)));
+                    }
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">@escola.Series.Count</h3>
+                                <p class="mb-0">Séries</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-success">@totalTurmas</h3>
+                                <p class="mb-0">Turmas</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-info">@totalEstudantes</h3>
+                                <p class="mb-0">Estudantes</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-warning">@totalDiarios</h3>
+                                <p class="mb-0">Diários</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6>Turmas por Série:</h6>
+                    <ul class="list-unstyled">
+                        @foreach (var serie in escola.Series)
+                        {
+                            <li><strong>@serie.Nome:</strong> @serie.Turmas.Count turmas</li>
+                        }
+                    </ul>
+                    
+                    <h6 class="mt-3">Estudantes por Série:</h6>
+                    <ul class="list-unstyled">
+                        @foreach (var serie in escola.Series)
+                        {
+                            var qtEst = serie.Turmas.Sum(t => t.Estudantes.Count);
+                            <li><strong>@serie.Nome:</strong> @qtEst estudantes</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string novaSerie = string.Empty;
+
+    private async Task CadastrarSerie()
+    {
+        if (!string.IsNullOrWhiteSpace(novaSerie))
+        {
+            EscolaService.CadastrarSerie(novaSerie);
+            novaSerie = string.Empty;
+            await JSRuntime.InvokeVoidAsync("alert", "Série cadastrada com sucesso!");
+            StateHasChanged();
+        }
+    }
+}

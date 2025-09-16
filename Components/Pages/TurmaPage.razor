@@ -1,0 +1,275 @@
+@page "/turma"
+@rendermode InteractiveServer
+@using SistemaEscolarWeb.Services
+@using SistemaEscolarWeb.Models
+@inject EscolaService EscolaService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Turma</PageTitle>
+
+<div class="container-fluid">
+    <h1 class="mb-4">Turmas</h1>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Listagem de Turmas</h5>
+            <button class="btn btn-primary" @onclick="@(() => CadastrarTurma())">
+                <i class="bi bi-plus-circle"></i> Cadastrar Turma
+            </button>
+        </div>
+        <div class="card-body">
+            @if (turmas.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Turma</th>
+                                <th>Série</th>
+                                <th>Estudantes</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var turma in turmas)
+                            {
+                                var serie = EscolaService.GetEscola().Series.FirstOrDefault(s => s.Turmas.Contains(turma));
+                                <tr>
+                                    <td>@turma.ID</td>
+                                    <td>@turma.Nome</td>
+                                    <td>@(serie?.Nome ?? "N/A")</td>
+                                    <td>@turma.Estudantes.Count</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-info me-2" @onclick="async () => await VerDetalhes(turma.ID)">
+                                        <i class="bi bi-eye"></i> Detalhes
+                                        </button>
+                                        <button class="btn btn-sm btn-warning me-2" @onclick="@(() => AlterarTurma(turma.ID))">
+                                            <i class="bi bi-pencil"></i> Alterar
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" @onclick="@(() => ExcluirTurma(turma.ID))">
+                                            <i class="bi bi-trash"></i> Excluir
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <p class="text-muted">Nenhuma turma cadastrada.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Cadastro de Turma -->
+@if (mostrarModalCadastro)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cadastrar Nova Turma</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModal"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="nomeTurma" class="form-label">Nome da Turma *</label>
+                            <input type="text" class="form-control" id="nomeTurma" @bind="nomeTurma" 
+                                   placeholder="Ex: A, B, C, 1º A, etc." required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="serieTurma" class="form-label">Série *</label>
+                            <select class="form-select" id="serieTurma" @bind="serieSelecionada" required>
+                                <option value="0">Selecione uma série</option>
+                                @foreach (var serie in series)
+                                {
+                                    <option value="@serie.ID">@serie.Nome</option>
+                                }
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="SalvarTurma">
+                        <i class="bi bi-check-circle"></i> Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal para Alteração de Turma -->
+@if (mostrarModalAlteracao)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Alterar Turma</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalAlteracao"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Série Atual</label>
+                            <input type="text" class="form-control" value="@serieAtual" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nomeTurmaAlteracao" class="form-label">Nome da Turma *</label>
+                            <input type="text" class="form-control" id="nomeTurmaAlteracao" @bind="nomeTurma" 
+                                   placeholder="Ex: A, B, C, 1º A, etc." required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModalAlteracao">Cancelar</button>
+                    <button type="button" class="btn btn-warning" @onclick="SalvarAlteracaoTurma">
+                        <i class="bi bi-check-circle"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Models.Turma> turmas = new();
+    private List<Models.Serie> series = new();
+    private bool mostrarModalCadastro = false;
+    private bool mostrarModalAlteracao = false;
+    private string nomeTurma = string.Empty;
+    private int serieSelecionada = 0;
+    private int turmaIdAlteracao = 0;
+    private string serieAtual = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        turmas = EscolaService.TurmaListar();
+        series = EscolaService.GetEscola().Series;
+    }
+/*
+     private void VerDetalhes(int turmaId)
+    {
+        Navigation.NavigateTo($"/turma/detalhes/{turmaId}");
+    }
+*/
+    private void CadastrarTurma()
+    {
+        nomeTurma = string.Empty;
+        serieSelecionada = 0;
+        mostrarModalCadastro = true;
+    }
+
+    private void FecharModal()
+    {
+        mostrarModalCadastro = false;
+        nomeTurma = string.Empty;
+        serieSelecionada = 0;
+    }
+
+    private void FecharModalAlteracao()
+    {
+        mostrarModalAlteracao = false;
+        nomeTurma = string.Empty;
+        turmaIdAlteracao = 0;
+        serieAtual = string.Empty;
+    }
+
+    private async Task SalvarTurma()
+    {
+        if (string.IsNullOrWhiteSpace(nomeTurma) || serieSelecionada == 0)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha todos os campos obrigatórios.");
+            return;
+        }
+
+        try
+        {
+            EscolaService.CadastrarTurma(nomeTurma, serieSelecionada);
+            turmas = EscolaService.TurmaListar();
+            FecharModal();
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", "Turma cadastrada com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar turma: {ex.Message}");
+        }
+    }
+
+    private async Task SalvarAlteracaoTurma()
+    {
+        if (string.IsNullOrWhiteSpace(nomeTurma))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome da turma.");
+            return;
+        }
+
+        try
+        {
+            EscolaService.AlterarTurma(turmaIdAlteracao, nomeTurma);
+            turmas = EscolaService.TurmaListar();
+            FecharModalAlteracao();
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", "Turma alterada com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar turma: {ex.Message}");
+        }
+    }
+
+    private async Task VerDetalhes(int turmaId)
+    {
+        // Escreve no console do navegador (WASM) ou no output do servidor (Server)
+        //Console.WriteLine($"VerDetalhes chamado com id={turmaId}");
+
+        // Ou loga direto no console do browser via JS
+        await JSRuntime.InvokeVoidAsync("console.log", $"VerDetalhes chamado com id={turmaId}");
+
+        Navigation.NavigateTo($"/turma/detalhes/{turmaId}");
+    }
+
+    private void AlterarTurma(int turmaId)
+    {
+        var turma = EscolaService.GetTurmaPorId(turmaId);
+        if (turma != null)
+        {
+            turmaIdAlteracao = turmaId;
+            nomeTurma = turma.Nome;
+            
+            // Encontrar a série da turma
+            var serie = EscolaService.GetEscola().Series.FirstOrDefault(s => s.Turmas.Contains(turma));
+            serieAtual = serie?.Nome ?? "N/A";
+            
+            mostrarModalAlteracao = true;
+        }
+    }
+
+    private async Task ExcluirTurma(int turmaId)
+    {
+        var turma = EscolaService.GetTurmaPorId(turmaId);
+        if (turma != null)
+        {
+            var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
+                $"Deseja realmente excluir a turma '{turma.Nome}'?");
+            
+            if (confirmacao)
+            {
+                EscolaService.ExcluirTurma(turmaId);
+                turmas = EscolaService.TurmaListar();
+                StateHasChanged();
+            }
+        }
+    }
+}
