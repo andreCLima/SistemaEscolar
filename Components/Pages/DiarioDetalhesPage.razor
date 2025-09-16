@@ -39,32 +39,6 @@
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Ações</h5>
-                    </div>
-                    <div class="card-body">
-                        <button class="btn btn-primary me-2 mb-2" @onclick="@(() => CadastrarAula())">
-                            <i class="bi bi-plus-circle"></i> Cadastrar Aula
-                        </button>
-                        <button class="btn btn-warning me-2 mb-2" @onclick="@(() => AlterarAula())">
-                            <i class="bi bi-pencil"></i> Alterar Aula
-                        </button>
-                        <button class="btn btn-danger me-2 mb-2" @onclick="@(() => ExcluirAula())">
-                            <i class="bi bi-trash"></i> Excluir Aula
-                        </button>
-                        <br/>
-                        <button class="btn btn-success me-2 mb-2" @onclick="@(() => NovoRegistro())">
-                            <i class="bi bi-plus-circle"></i> Novo Registro
-                        </button>
-                        <button class="btn btn-info" @onclick="@(() => VerRegistros())">
-                            <i class="bi bi-list"></i> Ver Registros
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Calendário de Aulas e Lista de Estudantes -->
@@ -72,16 +46,19 @@
             <!-- Calendário de Aulas - Lado Esquerdo -->
             <div class="col-md-5">
                 <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">Calendário de Aulas</h5>
-                        <div>
-                            <button class="btn btn-sm btn-outline-secondary me-2" @onclick="@(() => MesAnterior())">
-                                <i class="bi bi-chevron-left"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-secondary" @onclick="@(() => MesProximo())">
-                                <i class="bi bi-chevron-right"></i>
-                            </button>
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center"> 
+                            <h5 class="card-title mb-0">Calendário de Aulas</h5>
+                            <div>
+                                <button class="btn btn-sm btn-outline-secondary me-2" title="<-" @onclick="@(() => MesAnterior())">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" title="->" @onclick="@(() => MesProximo())">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
                         </div>
+                        <small class="text-muted">Clique no dia com aula(azul) para criar um registro</small>
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-2">
@@ -145,10 +122,6 @@
                                                         <div class="@(temAula ? "fw-bold text-primary" : "text-muted") @(temAula ? "cursor-pointer" : "")" 
                                                              style="font-size: 0.9rem; @(temAula ? "cursor: pointer;" : "")">
                                                             @diaDoMes
-                                                            @if (temAula)
-                                                            {
-                                                                <br/><small class="text-success" style="font-size: 0.7rem;">Clique para registrar</small>
-                                                            }
                                                         </div>
                                                     }
                                                 </td>

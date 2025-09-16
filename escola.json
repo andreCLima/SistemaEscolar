@@ -13,15 +13,7 @@
               "Nome": "Ana"
             }
           ],
-          "Diarios": [
-            {
-              "ID": 5,
-              "Disciplina": "Geografia",
-              "Educador": "Ivana",
-              "Aulas": [],
-              "Registros": []
-            }
-          ]
+          "Diarios": []
         }
       ]
     },
@@ -40,14 +32,6 @@
             {
               "ID": 3,
               "Nome": "Carlos"
-            },
-            {
-              "ID": 6,
-              "Nome": "Chagas"
-            },
-            {
-              "ID": 7,
-              "Nome": "maria"
             }
           ],
           "Diarios": [
@@ -58,13 +42,23 @@
               "Aulas": [
                 {
                   "ID": 1,
-                  "DiaSemana": "Seg",
+                  "DiaSemana": "Dom",
                   "NumeroAula": 1
                 },
                 {
-                  "ID": 5,
+                  "ID": 2,
                   "DiaSemana": "Ter",
-                  "NumeroAula": 8
+                  "NumeroAula": 2
+                },
+                {
+                  "ID": 4,
+                  "DiaSemana": "Dom",
+                  "NumeroAula": 7
+                },
+                {
+                  "ID": 6,
+                  "DiaSemana": "Dom",
+                  "NumeroAula": 2
                 }
               ],
               "Registros": []
@@ -75,34 +69,14 @@
               "Educador": "Maria",
               "Aulas": [
                 {
-                  "ID": 2,
-                  "DiaSemana": "Qua",
-                  "NumeroAula": 2
+                  "ID": 5,
+                  "DiaSemana": "Qui",
+                  "NumeroAula": 4
                 },
                 {
-                  "ID": 4,
-                  "DiaSemana": "Seg",
-                  "NumeroAula": 8
-                }
-              ],
-              "Registros": [
-                {
-                  "ID": 1,
-                  "DiarioID": 2,
-                  "Data": "2025-09-03",
-                  "Texto": "teste"
-                }
-              ]
-            },
-            {
-              "ID": 4,
-              "Disciplina": "Geografia",
-              "Educador": "Ivana",
-              "Aulas": [
-                {
-                  "ID": 6,
-                  "DiaSemana": "Qua",
-                  "NumeroAula": 8
+                  "ID": 7,
+                  "DiaSemana": "Sex",
+                  "NumeroAula": 2
                 }
               ],
               "Registros": []
@@ -129,25 +103,12 @@
               "Educador": "Leo",
               "Aulas": [
                 {
-                  "ID": 3,
-                  "DiaSemana": "Sex",
-                  "NumeroAula": 3
+                  "ID": 8,
+                  "DiaSemana": "Ter",
+                  "NumeroAula": 2
                 }
               ],
-              "Registros": [
-                {
-                  "ID": 1,
-                  "DiarioID": 3,
-                  "Data": "2025-09-05",
-                  "Texto": "teste de registro"
-                },
-                {
-                  "ID": 2,
-                  "DiarioID": 3,
-                  "Data": "2025-09-19",
-                  "Texto": "teste de registro"
-                }
-              ]
+              "Registros": []
             }
           ]
         }

@@ -1,4 +1,3 @@
-
 namespace SistemaEscolarWeb.Models;
 
 public class Escola

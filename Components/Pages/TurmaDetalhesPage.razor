@@ -23,31 +23,21 @@
 
         <!-- Tabela de Horários -->
         <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header">
                 <h5 class="card-title mb-0">Horários</h5>
-                <div>
-                    <button class="btn btn-sm btn-primary me-2" @onclick="@(() => CadastrarAula())">
-                        <i class="bi bi-plus-circle"></i> Cadastrar Aula
-                    </button>
-                    <button class="btn btn-sm btn-warning me-2" @onclick="@(() => AlterarAula())">
-                        <i class="bi bi-pencil"></i> Alterar Aula
-                    </button>
-                    <button class="btn btn-sm btn-danger" @onclick="@(() => ExcluirAula())">
-                        <i class="bi bi-trash"></i> Excluir Aula
-                    </button>
-                </div>
+                <small class="text-muted">Clique na célula para cadastrar, alterar ou excluir uma aula</small>
             </div>
             <div class="card-body">
                 @{
                     var diasSemana = new[] { "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab" };
-                    var aulasTurma = turma.Diarios.SelectMany(d => d.Aulas)
-                        .OrderBy(a => a.DiaSemana).ThenBy(a => a.NumeroAula).ToList();
+                    var aulasTurma = turma.Diarios.SelectMany(d => d.Aulas).ToList();
                 }
                 
                 <div class="table-responsive">
-                    <table class="table table-bordered table-sm">
+                    <table class="table table-bordered table-sm" style="font-size: 0.85rem;">
                         <thead class="table-dark">
                             <tr>
+                                <th class="text-center">Aula</th>
                                 @foreach (var dia in diasSemana)
                                 {
                                     <th class="text-center">@dia</th>
@@ -58,23 +48,31 @@
                             @for (int i = 1; i <= 7; i++)
                             {
                                 <tr>
+                                    <td class="text-center fw-bold bg-light" style="vertical-align: middle;">
+                                        @(i)ª Aula
+                                    </td>
                                     @foreach (var dia in diasSemana)
                                     {
                                         var aula = aulasTurma.FirstOrDefault(a => a.DiaSemana == dia && a.NumeroAula == i);
-                                        <td class="text-center @(aula == null ? "table-cell-clickable" : "")" 
-                                            @onclick="@(() => ClicarCelulaHorario(dia, i))"
-                                            style="@(aula == null ? "cursor: pointer; background-color: #f8f9fa;" : "")">
+                                        var diaLocal = dia; // Capturar valor local para evitar closure
+                                        var numeroAulaLocal = i; // Capturar valor local para evitar closure
+                                        <td class="text-center" 
+                                            @onclick="@(() => ClicarCelulaHorario(diaLocal, numeroAulaLocal))"
+                                            style="cursor: pointer; min-height: 60px; vertical-align: middle;">
                                             @if (aula != null)
                                             {
                                                 var diario = turma.Diarios.FirstOrDefault(d => d.Aulas.Contains(aula));
-                                                <div class="small">
+                                                <div class="p-1" style="background-color: #e3f2fd; border-radius: 4px; font-size: 0.75rem;">
                                                     <strong>@diario?.Disciplina</strong><br/>
-                                                    <small>@diario?.Educador</small>
+                                                    <small class="text-muted" style="font-size: 0.7rem;">@diario?.Educador</small>
                                                 </div>
                                             }
                                             else
                                             {
-                                                <span class="text-muted">+</span>
+                                                <div class="text-muted" style="opacity: 0.5; font-size: 0.75rem;">
+                                                    <i class="bi bi-plus-circle"></i>
+                                                    <small class="text-muted" style="font-size: 0.7rem;">Sem Aula</small>
+                                                </div>
                                             }
                                         </td>
                                     }
@@ -231,6 +229,55 @@
     </div>
 }
 
+<!-- Modal para Alteração de Aula -->
+@if (mostrarModalAlteracaoAula)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Alterar Aula</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalAlteracaoAula"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Dia da Semana</label>
+                            <input type="text" class="form-control" value="@diaSemanaAlteracao" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Número da Aula</label>
+                            <input type="text" class="form-control" value="@numeroAulaAlteracao" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="diarioAlteracao" class="form-label">Diário *</label>
+                            <select class="form-select" id="diarioAlteracao" @bind="diarioAlteracao" required>
+                                <option value="0">Selecione um diário</option>
+                                @if (turma != null)
+                                {
+                                    @foreach (var diario in turma.Diarios)
+                                    {
+                                        <option value="@diario.ID">@diario.Disciplina - @diario.Educador</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModalAlteracaoAula">Cancelar</button>
+                    <button type="button" class="btn btn-danger me-2" @onclick="ExcluirAula">
+                        <i class="bi bi-trash"></i> Excluir
+                    </button>
+                    <button type="button" class="btn btn-warning" @onclick="SalvarAlteracaoAula">
+                        <i class="bi bi-check-circle"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 <!-- Modal para Cadastro de Diário -->
 @if (mostrarModalCadastroDiario)
 {
@@ -369,6 +416,11 @@
     private string diaSemanaSelecionado = string.Empty;
     private int numeroAulaSelecionado = 0;
     private int diarioSelecionado = 0;
+    private bool mostrarModalAlteracaoAula = false;
+    private int aulaIdAlteracao = 0;
+    private string diaSemanaAlteracao = string.Empty;
+    private int numeroAulaAlteracao = 0;
+    private int diarioAlteracao = 0;
     private bool mostrarModalCadastroDiario = false;
     private string disciplinaDiario = string.Empty;
     private string educadorDiario = string.Empty;
@@ -400,7 +452,8 @@
         
         if (aulaExistente != null)
         {
-            JSRuntime.InvokeVoidAsync("alert", "Já existe uma aula neste horário. Use a função de alterar para modificar.");
+            // Se já existe aula, abrir modal de alteração
+            AbrirModalAlteracaoAula(aulaExistente);
             return;
         }
 
@@ -411,6 +464,7 @@
             return;
         }
 
+        // Se não existe aula, abrir modal de cadastro
         diaSemanaSelecionado = dia;
         numeroAulaSelecionado = numeroAula;
         diarioSelecionado = 0;
@@ -449,14 +503,81 @@
         }
     }
 
-    private void AlterarAula()
+    private void AbrirModalAlteracaoAula(Models.Aula aula)
     {
-        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
+        aulaIdAlteracao = aula.ID;
+        diaSemanaAlteracao = aula.DiaSemana;
+        numeroAulaAlteracao = aula.NumeroAula;
+        
+        // Encontrar o diário que contém esta aula
+        var diario = turma?.Diarios.FirstOrDefault(d => d.Aulas.Contains(aula));
+        diarioAlteracao = diario?.ID ?? 0;
+        
+        mostrarModalAlteracaoAula = true;
     }
 
-    private void ExcluirAula()
+    private void FecharModalAlteracaoAula()
     {
-        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
+        mostrarModalAlteracaoAula = false;
+        aulaIdAlteracao = 0;
+        diaSemanaAlteracao = string.Empty;
+        numeroAulaAlteracao = 0;
+        diarioAlteracao = 0;
+    }
+
+    private async Task SalvarAlteracaoAula()
+    {
+        if (diarioAlteracao == 0)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Por favor, selecione um diário.");
+            return;
+        }
+
+        try
+        {
+            EscolaService.AlterarAula(aulaIdAlteracao, diarioAlteracao, diaSemanaAlteracao, numeroAulaAlteracao);
+            
+            // Atualizar a turma para refletir as mudanças
+            turma = EscolaService.GetTurmaPorId(TurmaId);
+            FecharModalAlteracaoAula();
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", "Aula alterada com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar aula: {ex.Message}");
+        }
+    }
+
+    private async Task ExcluirAula()
+    {
+        var aula = turma?.Diarios.SelectMany(d => d.Aulas)
+            .FirstOrDefault(a => a.ID == aulaIdAlteracao);
+        
+        if (aula != null)
+        {
+            var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
+                $"Deseja realmente excluir a aula do dia {aula.DiaSemana}, número {aula.NumeroAula}?\n\n" +
+                "ATENÇÃO: Esta ação não pode ser desfeita!");
+            
+            if (confirmacao)
+            {
+                try
+                {
+                    EscolaService.ExcluirAula(aulaIdAlteracao);
+                    
+                    // Atualizar a turma para refletir as mudanças
+                    turma = EscolaService.GetTurmaPorId(TurmaId);
+                    FecharModalAlteracaoAula();
+                    StateHasChanged();
+                    await JSRuntime.InvokeVoidAsync("alert", "Aula excluída com sucesso!");
+                }
+                catch (Exception ex)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir aula: {ex.Message}");
+                }
+            }
+        }
     }
 
     private void CadastrarDiario()

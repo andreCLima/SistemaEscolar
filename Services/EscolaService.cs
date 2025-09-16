@@ -54,6 +54,7 @@ public class EscolaService
         t3.Diarios.Add(d3);
 
         // Criar aulas e adicionar aos diários
+        /*
         var a1 = new Aula { ID = 1, DiaSemana = "Seg", NumeroAula = 1 };
         var a2 = new Aula { ID = 2, DiaSemana = "Qua", NumeroAula = 2 };
         var a3 = new Aula { ID = 3, DiaSemana = "Sex", NumeroAula = 3 };
@@ -61,6 +62,7 @@ public class EscolaService
         d1.Aulas.Add(a1);
         d2.Aulas.Add(a2);
         d3.Aulas.Add(a3);
+        */
 
         Save();
     }
@@ -220,7 +222,7 @@ public class EscolaService
         Save();
     }
 
-    public void AlterarAula(int id, string diaSemana, int numeroAula)
+    public void AlterarAula(int id, int diarioId, string diaSemana, int numeroAula)
     {
         var aula = _escola.Series
             .SelectMany(s => s.Turmas)
@@ -230,9 +232,26 @@ public class EscolaService
         
         if (aula != null)
         {
-            aula.DiaSemana = diaSemana;
-            aula.NumeroAula = numeroAula;
-            Save();
+            // Remover a aula do diário atual
+            var diarioAtual = _escola.Series
+                .SelectMany(s => s.Turmas)
+                .SelectMany(t => t.Diarios)
+                .FirstOrDefault(d => d.Aulas.Contains(aula));
+            
+            if (diarioAtual != null)
+            {
+                diarioAtual.Aulas.Remove(aula);
+            }
+            
+            // Adicionar a aula ao novo diário
+            var novoDiario = GetDiarioPorId(diarioId);
+            if (novoDiario != null)
+            {
+                aula.DiaSemana = diaSemana;
+                aula.NumeroAula = numeroAula;
+                novoDiario.Aulas.Add(aula);
+                Save();
+            }
         }
     }
 

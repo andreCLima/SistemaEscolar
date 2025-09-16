@@ -9,3 +9,5 @@ LINQ
 
 Overload (sobrecarga) = mesmo nome, parâmetros diferentes.
 Override (sobrescrita) = herança, comportamento redefinido.
+
+##Pasta do Projeto deve ter o mesmo nome do projeto##
