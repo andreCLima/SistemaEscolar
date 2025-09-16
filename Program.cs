@@ -1,3 +1,0 @@
-﻿using SistemaEscolar;
-
-App.Run();
