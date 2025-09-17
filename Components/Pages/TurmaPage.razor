@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @using SistemaEscolarWeb.Services
 @using SistemaEscolarWeb.Models
+@using SistemaEscolarWeb.Components.Shared
 @inject EscolaService EscolaService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
@@ -68,78 +69,40 @@
     </div>
 </div>
 
-<!-- Modal para Cadastro de Turma -->
 @if (mostrarModalCadastro)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Cadastrar Nova Turma</h5>
-                    <button type="button" class="btn-close" @onclick="FecharModal"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="nomeTurma" class="form-label">Nome da Turma *</label>
-                            <input type="text" class="form-control" id="nomeTurma" @bind="nomeTurma" 
-                                   placeholder="Ex: A, B, C, 1º A, etc." required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="serieTurma" class="form-label">Série *</label>
-                            <select class="form-select" id="serieTurma" @bind="serieSelecionada" required>
-                                <option value="0">Selecione uma série</option>
-                                @foreach (var serie in series)
-                                {
-                                    <option value="@serie.ID">@serie.Nome</option>
-                                }
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="FecharModal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" @onclick="SalvarTurma">
-                        <i class="bi bi-check-circle"></i> Salvar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Modal para Cadastro de Turma -->
+<ModalAlterarCadastrar 
+    titulo="Cadastrar Nova Turma"
+
+    labelEdit1="Nome da Turma"
+    expEdit1="Ex: A, B, C, 1º A, etc."
+
+    labelSerie1="Série"
+    expSerie1="Selecione uma série"
+    series="series"
+
+    OnFecharModal="@FecharModal"
+    OnSalvar="@SalvarTurma"
+/>
 }
 
-<!-- Modal para Alteração de Turma -->
 @if (mostrarModalAlteracao)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Alterar Turma</h5>
-                    <button type="button" class="btn-close" @onclick="FecharModalAlteracao"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label class="form-label">Série Atual</label>
-                            <input type="text" class="form-control" value="@serieAtual" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="nomeTurmaAlteracao" class="form-label">Nome da Turma *</label>
-                            <input type="text" class="form-control" id="nomeTurmaAlteracao" @bind="nomeTurma" 
-                                   placeholder="Ex: A, B, C, 1º A, etc." required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="FecharModalAlteracao">Cancelar</button>
-                    <button type="button" class="btn btn-warning" @onclick="SalvarAlteracaoTurma">
-                        <i class="bi bi-check-circle"></i> Salvar Alterações
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Modal para Alteração de Turma -->
+<ModalAlterarCadastrar
+    titulo="Alterar Turma"
+
+    labelEdit1="Série Atual"
+    textoEdit1="@serieAtual"
+
+
+    labelEdit2="Nome da Turma"
+    textoEdit2="@nomeTurma"
+
+    OnFecharModal="@FecharModalAlteracao"
+    OnSalvar="@SalvarAlteracaoTurma"
+/>
 }
 
 @code {
@@ -168,6 +131,7 @@
         nomeTurma = string.Empty;
         serieSelecionada = 0;
         mostrarModalCadastro = true;
+        Console.WriteLine("CadastrarTurma chamado");
     }
 
     private void FecharModal()
@@ -175,6 +139,7 @@
         mostrarModalCadastro = false;
         nomeTurma = string.Empty;
         serieSelecionada = 0;
+        Console.WriteLine("FecharModal chamado");
     }
 
     private void FecharModalAlteracao()
@@ -185,9 +150,9 @@
         serieAtual = string.Empty;
     }
 
-    private async Task SalvarTurma()
+    private async Task SalvarTurma((string nome, int serieId) dados)
     {
-        if (string.IsNullOrWhiteSpace(nomeTurma) || serieSelecionada == 0)
+        if (string.IsNullOrWhiteSpace(dados.nome) || dados.serieId == 0)
         {
             await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha todos os campos obrigatórios.");
             return;
@@ -195,7 +160,7 @@
 
         try
         {
-            EscolaService.CadastrarTurma(nomeTurma, serieSelecionada);
+            EscolaService.CadastrarTurma(dados.nome, dados.serieId);
             turmas = EscolaService.TurmaListar();
             FecharModal();
             StateHasChanged();
@@ -207,8 +172,10 @@
         }
     }
 
-    private async Task SalvarAlteracaoTurma()
+    private async Task SalvarAlteracaoTurma((string nome, int turmaId) dados)
     {
+        nomeTurma = dados.nome;
+
         if (string.IsNullOrWhiteSpace(nomeTurma))
         {
             await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome da turma.");

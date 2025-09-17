@@ -1,0 +1,261 @@
+@using SistemaEscolarWeb.Models
+@using SistemaEscolarWeb.Services
+
+@inject EscolaService EscolaService
+@inject IJSRuntime JSRuntime
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">@Titulo</h5>
+        @if (MostrarBotoesAcao)
+        {
+            <div>
+                <button class="btn btn-sm btn-primary me-2" @onclick="@(() => CadastrarEstudante())">
+                    <i class="bi bi-plus-circle"></i> Cadastrar Estudante
+                </button>
+            </div>
+        }
+    </div>
+    <div class="card-body">
+        @if (Estudantes != null && Estudantes.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            @if (MostrarBotoesAcao)
+                            {
+                                <th>Ações</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var estudante in Estudantes.OrderBy(e => e.Nome))
+                        {
+                            <tr>
+                                <td>@estudante.ID</td>
+                                <td>@estudante.Nome</td>
+                                @if (MostrarBotoesAcao)
+                                {
+                                    <td>
+                                        <button class="btn btn-sm btn-warning me-2" @onclick="@(() => AlterarEstudante(estudante.ID))">
+                                            <i class="bi bi-pencil"></i> Alterar
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" @onclick="@(() => ExcluirEstudante(estudante.ID))">
+                                            <i class="bi bi-trash"></i> Excluir
+                                        </button>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info mb-0">
+                <i class="bi bi-info-circle"></i>
+                @MensagemVazia
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal para Cadastro de Estudante -->
+@if (mostrarModalCadastroEstudante)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cadastrar Novo Estudante</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalCadastroEstudante"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="nomeEstudante" class="form-label">Nome do Estudante *</label>
+                            <input type="text" class="form-control" id="nomeEstudante" @bind="nomeEstudante" 
+                                   placeholder="Digite o nome completo do estudante" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModalCadastroEstudante">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="SalvarEstudante">
+                        <i class="bi bi-check-circle"></i> Salvar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Modal para Alteração de Estudante -->
+@if (mostrarModalAlteracaoEstudante)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Alterar Estudante</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalAlteracaoEstudante"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="nomeAlteracao" class="form-label">Nome do Estudante *</label>
+                            <input type="text" class="form-control" id="nomeAlteracao" @bind="nomeAlteracao" 
+                                   placeholder="Digite o nome completo do estudante" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="FecharModalAlteracaoEstudante">Cancelar</button>
+                    <button type="button" class="btn btn-warning" @onclick="SalvarAlteracaoEstudante">
+                        <i class="bi bi-check-circle"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] 
+    public int TurmaId { get; set; }
+    private Models.Turma? turma;
+    private bool mostrarModalCadastroEstudante = false;
+    private string nomeEstudante = string.Empty;
+    private bool mostrarModalAlteracaoEstudante = false;
+    private int estudanteIdAlteracao = 0;
+    private string nomeAlteracao = string.Empty;
+
+    [Parameter] public string Titulo { get; set; } = "Estudantes";
+    [Parameter] public List<Estudante>? Estudantes { get; set; }
+    [Parameter] public bool MostrarBotoesAcao { get; set; } = true;
+    [Parameter] public string MensagemVazia { get; set; } = "Nenhum estudante cadastrado.";
+    
+    //[Parameter] public EventCallback OnCadastrarEstudante { get; set; }
+    //[Parameter] public EventCallback<int> OnAlterarEstudante { get; set; }
+    //[Parameter] public EventCallback<int> OnExcluirEstudante { get; set; }
+
+    //@onclick="@(() => OnExcluirEstudante.InvokeAsync(estudante.ID))
+
+    //OnExcluirEstudante="@ExcluirEstudante"
+
+    protected override void OnInitialized()
+    {
+        turma = EscolaService.GetTurmaPorId(TurmaId);
+    }
+
+
+    private void CadastrarEstudante()
+    {
+        nomeEstudante = string.Empty;
+        mostrarModalCadastroEstudante = true;
+    }
+
+    private void FecharModalCadastroEstudante()
+    {
+        mostrarModalCadastroEstudante = false;
+        nomeEstudante = string.Empty;
+    }
+
+    private async Task SalvarEstudante()
+    {
+        if (string.IsNullOrWhiteSpace(nomeEstudante))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome do estudante.");
+            return;
+        }
+
+        try
+        {
+            EscolaService.CadastrarEstudante(TurmaId, nomeEstudante);
+            
+            // Atualizar a turma para refletir as mudanças
+            turma = EscolaService.GetTurmaPorId(TurmaId);
+            FecharModalCadastroEstudante();
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", "Estudante cadastrado com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar estudante: {ex.Message}");
+        }
+    }
+
+    private void AlterarEstudante(int estudanteId)
+    {
+        var estudante = turma?.Estudantes.FirstOrDefault(e => e.ID == estudanteId);
+        if (estudante != null)
+        {
+            estudanteIdAlteracao = estudanteId;
+            nomeAlteracao = estudante.Nome;
+            mostrarModalAlteracaoEstudante = true;
+        }
+    }
+
+    private void FecharModalAlteracaoEstudante()
+    {
+        mostrarModalAlteracaoEstudante = false;
+        estudanteIdAlteracao = 0;
+        nomeAlteracao = string.Empty;
+    }
+
+    private async Task SalvarAlteracaoEstudante()
+    {
+        if (string.IsNullOrWhiteSpace(nomeAlteracao))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome do estudante.");
+            return;
+        }
+
+        try
+        {
+            EscolaService.AlterarEstudante(estudanteIdAlteracao, nomeAlteracao);
+            
+            // Atualizar a turma para refletir as mudanças
+            turma = EscolaService.GetTurmaPorId(TurmaId);
+            FecharModalAlteracaoEstudante();
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("alert", "Estudante alterado com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar estudante: {ex.Message}");
+        }
+    }
+
+    private async Task ExcluirEstudante(int estudanteId)
+    {
+        var estudante = turma?.Estudantes.FirstOrDefault(e => e.ID == estudanteId);
+        if (estudante != null)
+        {
+            var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
+                $"Deseja realmente excluir o estudante '{estudante.Nome}'?\n\n" +
+                "ATENÇÃO: Esta ação não pode ser desfeita!");
+            
+            if (confirmacao)
+            {
+                try
+                {
+                    EscolaService.ExcluirEstudante(estudanteId);
+                    
+                    // Atualizar a turma para refletir as mudanças
+                    turma = EscolaService.GetTurmaPorId(TurmaId);
+                    StateHasChanged();
+                    await JSRuntime.InvokeVoidAsync("alert", "Estudante excluído com sucesso!");
+                }
+                catch (Exception ex)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir estudante: {ex.Message}");
+                }
+            }
+        }
+    }
+}

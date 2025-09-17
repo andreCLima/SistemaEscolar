@@ -2,10 +2,12 @@
 @rendermode InteractiveServer
 @using SistemaEscolarWeb.Models
 @using SistemaEscolarWeb.Services
+@using SistemaEscolarWeb.Components.Shared
 
 @inject EscolaService EscolaService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
 
 <PageTitle>Detalhes da Turma</PageTitle>
 
@@ -130,46 +132,13 @@
         </div>
 
         <!-- Tabela de Estudantes -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Estudantes</h5>
-                <div>
-                    <button class="btn btn-sm btn-primary me-2" @onclick="@(() => CadastrarEstudante())">
-                        <i class="bi bi-plus-circle"></i> Cadastrar Estudante
-                    </button>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>ID</th>
-                                <th>Nome</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var estudante in turma.Estudantes.OrderBy(e => e.Nome))
-                            {
-                                <tr>
-                                    <td>@estudante.ID</td>
-                                    <td>@estudante.Nome</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-warning me-2" @onclick="@(() => AlterarEstudante(estudante.ID))">
-                                            <i class="bi bi-pencil"></i> Alterar
-                                        </button>
-                                        <button class="btn btn-sm btn-danger" @onclick="@(() => ExcluirEstudante(estudante.ID))">
-                                            <i class="bi bi-trash"></i> Excluir
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        <TabelaEstudantes 
+            TurmaId="TurmaId"
+            Titulo="Estudantes"
+            Estudantes="turma.Estudantes"
+            MostrarBotoesAcao="true"
+            MensagemVazia="Nenhum estudante cadastrado nesta turma." 
+        />
     }
     else
     {
@@ -348,66 +317,6 @@
     </div>
 }
 
-<!-- Modal para Cadastro de Estudante -->
-@if (mostrarModalCadastroEstudante)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Cadastrar Novo Estudante</h5>
-                    <button type="button" class="btn-close" @onclick="FecharModalCadastroEstudante"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="nomeEstudante" class="form-label">Nome do Estudante *</label>
-                            <input type="text" class="form-control" id="nomeEstudante" @bind="nomeEstudante" 
-                                   placeholder="Digite o nome completo do estudante" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="FecharModalCadastroEstudante">Cancelar</button>
-                    <button type="button" class="btn btn-primary" @onclick="SalvarEstudante">
-                        <i class="bi bi-check-circle"></i> Salvar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
-<!-- Modal para Alteração de Estudante -->
-@if (mostrarModalAlteracaoEstudante)
-{
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Alterar Estudante</h5>
-                    <button type="button" class="btn-close" @onclick="FecharModalAlteracaoEstudante"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label for="nomeAlteracao" class="form-label">Nome do Estudante *</label>
-                            <input type="text" class="form-control" id="nomeAlteracao" @bind="nomeAlteracao" 
-                                   placeholder="Digite o nome completo do estudante" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="FecharModalAlteracaoEstudante">Cancelar</button>
-                    <button type="button" class="btn btn-warning" @onclick="SalvarAlteracaoEstudante">
-                        <i class="bi bi-check-circle"></i> Salvar Alterações
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
 @code {
     [Parameter] 
     public int TurmaId { get; set; }
@@ -428,6 +337,7 @@
     private int diarioIdAlteracao = 0;
     private string disciplinaAlteracao = string.Empty;
     private string educadorAlteracao = string.Empty;
+
     private bool mostrarModalCadastroEstudante = false;
     private string nomeEstudante = string.Empty;
     private bool mostrarModalAlteracaoEstudante = false;
@@ -461,6 +371,7 @@
         if (turma?.Diarios.Count == 0)
         {
             JSRuntime.InvokeVoidAsync("alert", "Não há diários cadastrados. Cadastre um diário primeiro.");
+            //Snackbar.Add("Não há diários cadastrados. Cadastre um diário primeiro.", Severity.Warning);
             return;
         }
 
@@ -690,6 +601,7 @@
         }
     }
 
+/*
     private void CadastrarEstudante()
     {
         nomeEstudante = string.Empty;
@@ -726,17 +638,14 @@
         }
     }
 
-    private void AlterarEstudante(int? estudanteId = null)
+    private void AlterarEstudante(int estudanteId)
     {
-        if (estudanteId.HasValue)
+        var estudante = turma?.Estudantes.FirstOrDefault(e => e.ID == estudanteId);
+        if (estudante != null)
         {
-            var estudante = turma?.Estudantes.FirstOrDefault(e => e.ID == estudanteId.Value);
-            if (estudante != null)
-            {
-                estudanteIdAlteracao = estudanteId.Value;
-                nomeAlteracao = estudante.Nome;
-                mostrarModalAlteracaoEstudante = true;
-            }
+            estudanteIdAlteracao = estudanteId;
+            nomeAlteracao = estudante.Nome;
+            mostrarModalAlteracaoEstudante = true;
         }
     }
 
@@ -771,36 +680,35 @@
         }
     }
 
-    private async Task ExcluirEstudante(int? estudanteId = null)
+    private async Task ExcluirEstudante(int estudanteId)
     {
-        if (estudanteId.HasValue)
+        var estudante = turma?.Estudantes.FirstOrDefault(e => e.ID == estudanteId);
+        if (estudante != null)
         {
-            var estudante = turma?.Estudantes.FirstOrDefault(e => e.ID == estudanteId.Value);
-            if (estudante != null)
+            var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
+                $"Deseja realmente excluir o estudante '{estudante.Nome}'?\n\n" +
+                "ATENÇÃO: Esta ação não pode ser desfeita!");
+            
+            if (confirmacao)
             {
-                var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
-                    $"Deseja realmente excluir o estudante '{estudante.Nome}'?\n\n" +
-                    "ATENÇÃO: Esta ação não pode ser desfeita!");
-                
-                if (confirmacao)
+                try
                 {
-                    try
-                    {
-                        EscolaService.ExcluirEstudante(estudanteId.Value);
-                        
-                        // Atualizar a turma para refletir as mudanças
-                        turma = EscolaService.GetTurmaPorId(TurmaId);
-                        StateHasChanged();
-                        await JSRuntime.InvokeVoidAsync("alert", "Estudante excluído com sucesso!");
-                    }
-                    catch (Exception ex)
-                    {
-                        await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir estudante: {ex.Message}");
-                    }
+                    EscolaService.ExcluirEstudante(estudanteId);
+                    
+                    // Atualizar a turma para refletir as mudanças
+                    turma = EscolaService.GetTurmaPorId(TurmaId);
+                    StateHasChanged();
+                    await JSRuntime.InvokeVoidAsync("alert", "Estudante excluído com sucesso!");
+                }
+                catch (Exception ex)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir estudante: {ex.Message}");
                 }
             }
         }
     }
+
+*/
 
     private void VerDiario(int diarioId)
     {

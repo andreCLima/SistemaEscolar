@@ -1,0 +1,113 @@
+@using SistemaEscolarWeb.Models
+@using SistemaEscolarWeb.Services
+
+@inject EscolaService EscolaService
+@inject IJSRuntime JSRuntime
+
+
+<div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@titulo</h5>
+                <button type="button" class="btn-close" @onclick="@FecharModal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    @if (labelEdit1 != String.Empty)
+                    {
+                        <div class="mb-3">
+                            <label for="nomeTurma" class="form-label">@labelEdit1</label>
+                            <input type="text" class="form-control" id="edit1" @bind="@textoEdit1"
+                                    placeholder="@expEdit1" required>
+                        </div>
+                    }
+                    @if (labelEdit2 != String.Empty)
+                    {
+                        <div class="mb-3">
+                            <label for="nomeTurma" class="form-label">@labelEdit2</label>
+                            <input type="text" class="form-control" id="edit2" @bind="@textoEdit2" 
+                                    placeholder="@expEdit2" required>
+                        </div>
+                    }
+                    @if (series.Count > 0)
+                    {
+                        <div class="mb-3">
+                            <label for="serieTurma" class="form-label">@labelSerie1</label>
+                            <select class="form-select" id="serieTurma" @bind="serieSelecionada" required>
+                                <option value="0">@expSerie1</option>
+                                @foreach (var s in series)
+                                {
+                                    <option value="@s.ID">@s.Nome</option>
+                                }
+                            </select>
+                        </div>
+                    }
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="@FecharModal">Cancelar</button>
+                <button type="button" class="btn btn-primary" @onclick="@Salvar">
+                    <i class="bi bi-check-circle"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+
+@code {
+    [Parameter] public string titulo { get; set; } = String.Empty;
+
+    [Parameter] public string labelEdit1 { get; set; } = String.Empty;
+    [Parameter] public string expEdit1 { get; set; } = String.Empty;
+    [Parameter] public string textoEdit1 { get; set; } = String.Empty;
+
+    [Parameter] public string labelEdit2 { get; set; } = String.Empty;
+    [Parameter] public string expEdit2 { get; set; } = String.Empty;
+    [Parameter] public string textoEdit2 { get; set; } = String.Empty;
+
+    [Parameter] public List<Models.Serie> series { get; set; } = new();
+    [Parameter] public string labelSerie1 { get; set; } = String.Empty;
+    [Parameter] public string expSerie1 { get; set; } = String.Empty;
+    [Parameter] public int serieSelecionada { get; set; } = 0;
+
+
+    [Parameter] public EventCallback<(string texto, int id)> OnSalvar { get; set; }
+    [Parameter] public EventCallback OnFecharModal { get; set; }
+
+  
+
+    private void FecharModal()
+    {
+        titulo = string.Empty;
+      
+        labelEdit1 = string.Empty;
+        expEdit1 = string.Empty;
+        textoEdit1 = string.Empty;
+
+        labelEdit2 = string.Empty;
+        expEdit2 = string.Empty;
+        textoEdit2 = string.Empty;
+
+        labelSerie1 = string.Empty;
+        expSerie1 = string.Empty;
+        serieSelecionada = 0;
+
+        OnFecharModal.InvokeAsync();
+    }
+
+    private void Salvar()
+    {
+        if(titulo == "Cadastrar Nova Turma")
+        {
+            OnSalvar.InvokeAsync((textoEdit1, serieSelecionada));
+        }
+        else
+        {
+            OnSalvar.InvokeAsync((textoEdit2, serieSelecionada));
+        }
+    }
+   
+}

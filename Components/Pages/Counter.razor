@@ -1,6 +1,10 @@
 ﻿@page "/counter"
 @rendermode InteractiveServer
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
+<MudDialogProvider />
+<MudSnackbarProvider />
 <PageTitle>Counter</PageTitle>
 
 <h1>Counter</h1>
@@ -15,5 +19,7 @@
     private void IncrementCount()
     {
         currentCount++;
+
+        Snackbar.Add("Não há diários cadastrados. Cadastre um diário primeiro.", Severity.Warning);
     }
 }

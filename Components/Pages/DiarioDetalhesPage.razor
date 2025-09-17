@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @using SistemaEscolarWeb.Services
 @using SistemaEscolarWeb.Models
+@using SistemaEscolarWeb.Components.Shared
 @inject EscolaService EscolaService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
@@ -157,55 +158,17 @@
 
             <!-- Lista de Estudantes - Lado Direito -->
             <div class="col-md-7">
-                @if (turma != null && turma.Estudantes.Any())
-                {
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Estudantes da Turma (@turma.Estudantes.Count)</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Nome</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var estudante in turma.Estudantes.OrderBy(e => e.Nome))
-                                        {
-                                            <tr>
-                                                <td>@estudante.ID</td>
-                                                <td>@estudante.Nome</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Estudantes da Turma</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="alert alert-info mb-0">
-                                <i class="bi bi-info-circle"></i>
-                                Nenhum estudante cadastrado nesta turma.
-                            </div>
-                        </div>
-                    </div>
-                }
+                <TabelaEstudantes 
+                    TurmaId="turma.ID"
+                    Titulo="@($"Estudantes da Turma{(turma?.Estudantes != null ? $" ({turma.Estudantes.Count})" : "")}")"
+                    Estudantes="turma?.Estudantes"
+                    MostrarBotoesAcao="true"
+                    MensagemVazia="Nenhum estudante cadastrado nesta turma." />
             </div>
         </div>
 
         <!-- Registros -->
-        @if (diario.Registros.Any())
-        {
+        
             <div class="card mt-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Registros</h5>
@@ -234,7 +197,7 @@
                     </div>
                 </div>
             </div>
-        }
+        
     }
     else
     {
