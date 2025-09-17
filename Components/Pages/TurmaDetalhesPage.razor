@@ -8,6 +8,10 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
 <PageTitle>Detalhes da Turma</PageTitle>
 
@@ -387,11 +391,6 @@
         turma = EscolaService.GetTurmaPorId(TurmaId);
     }
 
-    private void CadastrarAula()
-    {
-        JSRuntime.InvokeVoidAsync("alert", "Clique em uma célula vazia da tabela de horários para cadastrar uma aula");
-    }
-
     private void ClicarCelulaHorario(string dia, int numeroAula)
     {
         // Verificar se já existe uma aula neste horário
@@ -408,8 +407,8 @@
         // Verificar se existem diários cadastrados
         if (turma?.Diarios.Count == 0)
         {
-            JSRuntime.InvokeVoidAsync("alert", "Não há diários cadastrados. Cadastre um diário primeiro.");
-            //Snackbar.Add("Não há diários cadastrados. Cadastre um diário primeiro.", Severity.Warning);
+            //JSRuntime.InvokeVoidAsync("alert", "Não há diários cadastrados. Cadastre um diário primeiro.");
+            Snackbar.Add(message: "Não há diários cadastrados. Cadastre um diário primeiro.", Severity.Warning);
             return;
         }
 
@@ -432,23 +431,26 @@
     {
         if (diarioSelecionado == 0)
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Por favor, selecione um diário.");
+            //await JSRuntime.InvokeVoidAsync("alert", "Por favor, selecione um diário.");
+            Snackbar.Add(message: "Por favor, selecione um diário.", Severity.Warning);
             return;
         }
 
         try
         {
-            EscolaService.CadastrarAula(diarioSelecionado, diaSemanaSelecionado, numeroAulaSelecionado);
+            await EscolaService.CadastrarAula(diarioSelecionado, diaSemanaSelecionado, numeroAulaSelecionado);
             
             // Atualizar a turma para refletir as mudanças
             turma = EscolaService.GetTurmaPorId(TurmaId);
             FecharModalCadastroAula();
             StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("alert", "Aula cadastrada com sucesso!");
+            //await JSRuntime.InvokeVoidAsync("alert", "Aula cadastrada com sucesso!");
+            Snackbar.Add(message: "Aula cadastrada com sucesso!", Severity.Success);
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar aula: {ex.Message}");
+            //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar aula: {ex.Message}");
+            Snackbar.Add(message: $"Erro ao cadastrar aula: {ex.Message}", Severity.Error);
         }
     }
 
@@ -478,23 +480,26 @@
     {
         if (diarioAlteracao == 0)
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Por favor, selecione um diário.");
+            //await JSRuntime.InvokeVoidAsync("alert", "Por favor, selecione um diário.");
+            Snackbar.Add(message: "Por favor, selecione um diário.", Severity.Warning);
             return;
         }
 
         try
         {
-            EscolaService.AlterarAula(aulaIdAlteracao, diarioAlteracao, diaSemanaAlteracao, numeroAulaAlteracao);
+            await EscolaService.AlterarAula(aulaIdAlteracao, diarioAlteracao, diaSemanaAlteracao, numeroAulaAlteracao);
             
             // Atualizar a turma 
             turma = EscolaService.GetTurmaPorId(TurmaId);
             FecharModalAlteracaoAula();
             StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("alert", "Aula alterada com sucesso!");
+            //await JSRuntime.InvokeVoidAsync("alert", "Aula alterada com sucesso!");
+            Snackbar.Add(message: "Aula alterada com sucesso!", Severity.Success);
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar aula: {ex.Message}");
+            //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar aula: {ex.Message}");
+            Snackbar.Add(message: $"Erro ao alterar aula: {ex.Message}", Severity.Error);
         }
     }
 
@@ -505,24 +510,34 @@
         
         if (aula != null)
         {
+            /*
             var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
                 $"Deseja realmente excluir a aula do dia {aula.DiaSemana}, número {aula.NumeroAula}?\n\n");
+            */
+            Util util = new Util(DialogService, Snackbar);
+            var confirmacao = await util.DialogConfirma(
+                msg: $"Deseja realmente excluir a aula do dia {aula.DiaSemana}, número {aula.NumeroAula}?\n\n",
+                buttonText: "Excluir",
+                color: Color.Error,
+                titulo: "Confirmar Exclusão");
             
             if (confirmacao)
             {
                 try
                 {
-                    EscolaService.ExcluirAula(aulaIdAlteracao);
+                    await EscolaService.ExcluirAula(aulaIdAlteracao);
                     
                     // Atualizar a turma para refletir as mudanças
                     turma = EscolaService.GetTurmaPorId(TurmaId);
                     FecharModalAlteracaoAula();
                     StateHasChanged();
-                    await JSRuntime.InvokeVoidAsync("alert", "Aula excluída com sucesso!");
+                    //await JSRuntime.InvokeVoidAsync("alert", "Aula excluída com sucesso!");
+                    Snackbar.Add(message: "Aula excluída com sucesso!", Severity.Success);
                 }
                 catch (Exception ex)
                 {
-                    await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir aula: {ex.Message}");
+                    //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir aula: {ex.Message}");
+                    Snackbar.Add(message: $"Erro ao excluir aula: {ex.Message}", Severity.Error);
                 }
             }
         }
@@ -546,23 +561,26 @@
     {
         if (string.IsNullOrWhiteSpace(disciplinaDiario) || string.IsNullOrWhiteSpace(educadorDiario))
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha todos os campos obrigatórios.");
+            //await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha todos os campos obrigatórios.");
+            Snackbar.Add(message: "Por favor, preencha todos os campos obrigatórios.", Severity.Warning);
             return;
         }
 
         try
         {
-            EscolaService.CadastrarDiario(TurmaId, disciplinaDiario, educadorDiario);
+            await EscolaService.CadastrarDiario(TurmaId, disciplinaDiario, educadorDiario);
             
             // Atualizar a turma para refletir as mudanças
             turma = EscolaService.GetTurmaPorId(TurmaId);
             FecharModalCadastroDiario();
             StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("alert", "Diário cadastrado com sucesso!");
+            //await JSRuntime.InvokeVoidAsync("alert", "Diário cadastrado com sucesso!");
+            Snackbar.Add(message: "Diário cadastrado com sucesso!", Severity.Success);
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar diário: {ex.Message}");
+            //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar diário: {ex.Message}");
+            Snackbar.Add(message: $"Erro ao cadastrar diário: {ex.Message}", Severity.Error);
         }
     }
 
@@ -590,23 +608,26 @@
     {
         if (string.IsNullOrWhiteSpace(disciplinaAlteracao) || string.IsNullOrWhiteSpace(educadorAlteracao))
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha todos os campos obrigatórios.");
+            //await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha todos os campos obrigatórios.");
+            Snackbar.Add(message: "Por favor, preencha todos os campos obrigatórios.", Severity.Warning);
             return;
         }
 
         try
         {
-            EscolaService.AlterarDiario(diarioIdAlteracao, disciplinaAlteracao, educadorAlteracao);
+            await EscolaService.AlterarDiario(diarioIdAlteracao, disciplinaAlteracao, educadorAlteracao);
             
             // Atualizar a turma para refletir as mudanças
             turma = EscolaService.GetTurmaPorId(TurmaId);
             FecharModalAlteracaoDiario();
             StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("alert", "Diário alterado com sucesso!");
+            //await JSRuntime.InvokeVoidAsync("alert", "Diário alterado com sucesso!");
+            Snackbar.Add(message: "Diário alterado com sucesso!", Severity.Success);
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar diário: {ex.Message}");
+            //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar diário: {ex.Message}");
+            Snackbar.Add(message: $"Erro ao alterar diário: {ex.Message}", Severity.Error);
         }
     }
 
@@ -615,23 +636,32 @@
         var diario = EscolaService.GetDiarioPorId(diarioId);
         if (diario != null)
         {
+            /*
             var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
                 $"Deseja realmente excluir o diário '{diario.Disciplina}' do professor '{diario.Educador}'?\n\n");
-            
+            */
+            Util util = new Util(DialogService, Snackbar);
+            var confirmacao = await util.DialogConfirma(
+                msg: $"Deseja realmente excluir o diário '{diario.Disciplina}' do professor '{diario.Educador}'?\n\n",
+                buttonText: "Excluir",
+                color: Color.Error,
+                titulo: "Confirmar Exclusão");
             if (confirmacao)
             {
                 try
                 {
-                    EscolaService.ExcluirDiario(diarioId);
+                    await EscolaService.ExcluirDiario(diarioId);
                     
                     // Atualizar a turma para refletir as mudanças
                     turma = EscolaService.GetTurmaPorId(TurmaId);
                     StateHasChanged();
-                    await JSRuntime.InvokeVoidAsync("alert", "Diário excluído com sucesso!");
+                    //await JSRuntime.InvokeVoidAsync("alert", "Diário excluído com sucesso!");
+                    Snackbar.Add(message: "Diário excluído com sucesso!", Severity.Success);
                 }
                 catch (Exception ex)
                 {
-                    await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir diário: {ex.Message}");
+                    //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir diário: {ex.Message}");
+                    Snackbar.Add(message: $"Erro ao excluir diário: {ex.Message}", Severity.Error);
                 }
             }
         }

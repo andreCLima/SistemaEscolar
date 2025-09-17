@@ -14,9 +14,9 @@ public static class SaveJSON
         return JsonSerializer.Deserialize<Escola>(json) ?? new Escola();
     }
 
-    public static void Save(Escola escola)
+    public static async Task Save(Escola escola)
     {
         var json = JsonSerializer.Serialize(escola, new JsonSerializerOptions { WriteIndented = true });
-        File.WriteAllText(FileName, json);
+        await File.WriteAllTextAsync(FileName, json);
     }
 }

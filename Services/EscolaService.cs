@@ -9,12 +9,13 @@ public class EscolaService
     public EscolaService()
     {
         _escola = SaveJSON.Load();
-        DadosTeste();
+        //O operador _ (discard) indica que intencionalmente não estamos aguardando o resultado
+        DadosTeste(); // Fire and forget - não aguardamos pois é no construtor
     }
 
     public Escola GetEscola() => _escola;
 
-    public void Save() => SaveJSON.Save(_escola);
+    public async Task Save() => await SaveJSON.Save(_escola);
 
     private void DadosTeste()
     {
@@ -62,11 +63,13 @@ public class EscolaService
         d2.Aulas.Add(a2);
         d3.Aulas.Add(a3);
 
-        Save();
+        //O operador _ (discard) indica que intencionalmente não estamos aguardando o resultado
+        // Fire and forget - não aguardamos 
+        _ = Save();
     }
 
     // Métodos para Escola
-    public void CadastrarSerie(string nome)
+    public async Task CadastrarSerie(string nome)
     {
         var nova = new Serie
         {
@@ -74,7 +77,7 @@ public class EscolaService
             Nome = nome
         };
         _escola.Series.Add(nova);
-        Save();
+        await Save();
     }
 
     // Métodos para Turma
@@ -90,7 +93,7 @@ public class EscolaService
             .FirstOrDefault(t => t.ID == id);
     }
 
-    public void CadastrarTurma(string nome, int serieId)
+    public async Task CadastrarTurma(string nome, int serieId)
     {
         var serie = _escola.Series.FirstOrDefault(s => s.ID == serieId);
         if (serie == null) return;
@@ -105,20 +108,20 @@ public class EscolaService
             Nome = nome
         };
         serie.Turmas.Add(nova);
-        Save();
+        await Save();
     }
 
-    public void AlterarTurma(int id, string nome)
+    public async Task AlterarTurma(int id, string nome)
     {
         var turma = GetTurmaPorId(id);
         if (turma != null)
         {
             turma.Nome = nome;
-            Save();
+            await Save();
         }
     }
 
-    public void ExcluirTurma(int id)
+    public async Task ExcluirTurma(int id)
     {
         var turma = GetTurmaPorId(id);
         if (turma != null)
@@ -127,7 +130,7 @@ public class EscolaService
             if (serie != null)
             {
                 serie.Turmas.Remove(turma);
-                Save();
+                await Save();
             }
         }
     }
@@ -150,7 +153,7 @@ public class EscolaService
             .FirstOrDefault(d => d.ID == id);
     }
 
-    public void CadastrarDiario(int turmaId, string disciplina, string educador)
+    public async Task CadastrarDiario(int turmaId, string disciplina, string educador)
     {
         var turma = GetTurmaPorId(turmaId);
         if (turma == null) return;
@@ -167,21 +170,21 @@ public class EscolaService
             Educador = educador
         };
         turma.Diarios.Add(novo);
-        Save();
+        await Save();
     }
 
-    public void AlterarDiario(int id, string disciplina, string educador)
+    public async Task AlterarDiario(int id, string disciplina, string educador)
     {
         var diario = GetDiarioPorId(id);
         if (diario != null)
         {
             diario.Disciplina = disciplina;
             diario.Educador = educador;
-            Save();
+            await Save();
         }
     }
 
-    public void ExcluirDiario(int id)
+    public async Task ExcluirDiario(int id)
     {
         var diario = GetDiarioPorId(id);
         if (diario != null)
@@ -193,13 +196,13 @@ public class EscolaService
             if (turma != null)
             {
                 turma.Diarios.Remove(diario);
-                Save();
+                await Save();
             }
         }
     }
 
     // Métodos para Aula
-    public void CadastrarAula(int diarioId, string diaSemana, int numeroAula)
+    public async Task CadastrarAula(int diarioId, string diaSemana, int numeroAula)
     {
         var diario = GetDiarioPorId(diarioId);
         if (diario == null) return;
@@ -217,10 +220,10 @@ public class EscolaService
             NumeroAula = numeroAula
         };
         diario.Aulas.Add(novaAula);
-        Save();
+        await Save();
     }
 
-    public void AlterarAula(int id, int diarioId, string diaSemana, int numeroAula)
+    public async Task AlterarAula(int id, int diarioId, string diaSemana, int numeroAula)
     {
         var aula = _escola.Series
             .SelectMany(s => s.Turmas)
@@ -248,12 +251,12 @@ public class EscolaService
                 aula.DiaSemana = diaSemana;
                 aula.NumeroAula = numeroAula;
                 novoDiario.Aulas.Add(aula);
-                Save();
+                await Save();
             }
         }
     }
 
-    public void ExcluirAula(int id)
+    public async Task ExcluirAula(int id)
     {
         var aula = _escola.Series
             .SelectMany(s => s.Turmas)
@@ -271,13 +274,13 @@ public class EscolaService
             if (diario != null)
             {
                 diario.Aulas.Remove(aula);
-                Save();
+                await Save();
             }
         }
     }
 
     // Métodos para Estudante
-    public void CadastrarEstudante(int turmaId, string nome)
+    public async Task CadastrarEstudante(int turmaId, string nome)
     {
         var turma = GetTurmaPorId(turmaId);
         if (turma == null) return;
@@ -293,10 +296,10 @@ public class EscolaService
             Nome = nome
         };
         turma.Estudantes.Add(novo);
-        Save();
+        await Save();
     }
 
-    public void AlterarEstudante(int id, string nome)
+    public async Task AlterarEstudante(int id, string nome)
     {
         var estudante = _escola.Series
             .SelectMany(s => s.Turmas)
@@ -306,11 +309,11 @@ public class EscolaService
         if (estudante != null)
         {
             estudante.Nome = nome;
-            Save();
+            await Save();
         }
     }
 
-    public void ExcluirEstudante(int id)
+    public async Task ExcluirEstudante(int id)
     {
         var estudante = _escola.Series
             .SelectMany(s => s.Turmas)
@@ -326,7 +329,7 @@ public class EscolaService
             if (turma != null)
             {
                 turma.Estudantes.Remove(estudante);
-                Save();
+                await Save();
             }
         }
     }

@@ -3,66 +3,12 @@
     {
       "ID": 1,
       "Nome": "1 ano",
-      "Turmas": [
-        {
-          "ID": 1,
-          "Nome": "A",
-          "Estudantes": [
-            {
-              "ID": 1,
-              "Nome": "Ana"
-            }
-          ],
-          "Diarios": []
-        }
-      ]
+      "Turmas": []
     },
     {
       "ID": 2,
       "Nome": "2 ano",
       "Turmas": [
-        {
-          "ID": 2,
-          "Nome": "B",
-          "Estudantes": [
-            {
-              "ID": 2,
-              "Nome": "Bruno"
-            },
-            {
-              "ID": 3,
-              "Nome": "Carlos"
-            }
-          ],
-          "Diarios": [
-            {
-              "ID": 1,
-              "Disciplina": "Matematica",
-              "Educador": "Joao",
-              "Aulas": [
-                {
-                  "ID": 1,
-                  "DiaSemana": "Seg",
-                  "NumeroAula": 1
-                }
-              ],
-              "Registros": []
-            },
-            {
-              "ID": 2,
-              "Disciplina": "Portugues",
-              "Educador": "Maria",
-              "Aulas": [
-                {
-                  "ID": 2,
-                  "DiaSemana": "Qua",
-                  "NumeroAula": 2
-                }
-              ],
-              "Registros": []
-            }
-          ]
-        },
         {
           "ID": 3,
           "Nome": "C",
@@ -88,7 +34,14 @@
                   "NumeroAula": 3
                 }
               ],
-              "Registros": []
+              "Registros": [
+                {
+                  "ID": 1,
+                  "DiarioID": 3,
+                  "Data": "2025-09-19",
+                  "Texto": "teste"
+                }
+              ]
             }
           ]
         }
@@ -98,6 +51,49 @@
       "ID": 3,
       "Nome": "3 ano",
       "Turmas": []
+    },
+    {
+      "ID": 4,
+      "Nome": "7 ANO",
+      "Turmas": []
+    },
+    {
+      "ID": 5,
+      "Nome": "8 ANO",
+      "Turmas": [
+        {
+          "ID": 5,
+          "Nome": "Todos",
+          "Estudantes": [
+            {
+              "ID": 6,
+              "Nome": "Mario"
+            }
+          ],
+          "Diarios": [
+            {
+              "ID": 4,
+              "Disciplina": "Literatura",
+              "Educador": "Ivana",
+              "Aulas": [
+                {
+                  "ID": 4,
+                  "DiaSemana": "Seg",
+                  "NumeroAula": 1
+                }
+              ],
+              "Registros": [
+                {
+                  "ID": 1,
+                  "DiarioID": 4,
+                  "Data": "2025-09-15",
+                  "Texto": "teste"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }

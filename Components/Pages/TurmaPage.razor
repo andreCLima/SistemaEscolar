@@ -6,6 +6,11 @@
 @inject EscolaService EscolaService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
 <PageTitle>Turma</PageTitle>
 
@@ -43,7 +48,7 @@
                                     <td>@(serie?.Nome ?? "N/A")</td>
                                     <td>@turma.Estudantes.Count</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-info me-2" @onclick="async () => await VerDetalhes(turma.ID)">
+                                        <button type="button" class="btn btn-sm btn-info me-2" @onclick="@(() => VerDetalhes(turma.ID))">
                                         <i class="bi bi-eye"></i> Detalhes
                                         </button>
                                         <button class="btn btn-sm btn-warning me-2" @onclick="@(() => AlterarTurma(turma.ID))">
@@ -143,27 +148,30 @@
         nomeTurma = string.Empty;
         turmaIdAlteracao = 0;
         serieAtual = string.Empty;
-    }
+    }   
 
     private async Task SalvarTurma((string nome, int serieId) dados)
     {
         if (string.IsNullOrWhiteSpace(dados.nome) || dados.serieId == 0)
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha todos os campos obrigatórios.");
+            //await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha todos os campos obrigatórios.");
+            Snackbar.Add(message: "Por favor, preencha todos os campos obrigatórios.", Severity.Warning);
             return;
         }
 
         try
         {
-            EscolaService.CadastrarTurma(dados.nome, dados.serieId);
+            await EscolaService.CadastrarTurma(dados.nome, dados.serieId);
             turmas = EscolaService.TurmaListar();
             FecharModal();
             StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("alert", "Turma cadastrada com sucesso!");
+            //await JSRuntime.InvokeVoidAsync("alert", "Turma cadastrada com sucesso!");
+            Snackbar.Add(message: "Turma cadastrada com sucesso!", Severity.Success);
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar turma: {ex.Message}");
+            //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar turma: {ex.Message}");
+            Snackbar.Add(message: $"Erro ao cadastrar turma: {ex.Message}", Severity.Error);
         }
     }
 
@@ -173,29 +181,32 @@
 
         if (string.IsNullOrWhiteSpace(nomeTurma))
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome da turma.");
+            //await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome da turma.");
+            Snackbar.Add(message: "Por favor, preencha o nome da turma.", Severity.Warning);
             return;
         }
 
         try
         {
-            EscolaService.AlterarTurma(turmaIdAlteracao, nomeTurma);
+            await EscolaService.AlterarTurma(turmaIdAlteracao, nomeTurma);
             turmas = EscolaService.TurmaListar();
             FecharModalAlteracao();
             StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("alert", "Turma alterada com sucesso!");
+            //await JSRuntime.InvokeVoidAsync("alert", "Turma alterada com sucesso!");
+            Snackbar.Add(message: "Turma alterada com sucesso!", Severity.Success);
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar turma: {ex.Message}");
+            //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar turma: {ex.Message}");
+            Snackbar.Add(message: $"Erro ao alterar turma: {ex.Message}", Severity.Error);
         }
     }
 
-    private async Task VerDetalhes(int turmaId)
+    private void VerDetalhes(int turmaId)
     {
         Console.WriteLine($"VerDetalhes chamado com id={turmaId}");
 
-        await JSRuntime.InvokeVoidAsync("console.log", $"VerDetalhes chamado com id={turmaId}");
+        //await JSRuntime.InvokeVoidAsync("console.log", $"VerDetalhes chamado com id={turmaId}");
 
         Navigation.NavigateTo($"/turma/detalhes/{turmaId}");
     }
@@ -221,15 +232,24 @@
         var turma = EscolaService.GetTurmaPorId(turmaId);
         if (turma != null)
         {
-            var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
-                $"Deseja realmente excluir a turma '{turma.Nome}'?");
+            //var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
+            //    $"Deseja realmente excluir a turma '{turma.Nome}'?");
+            Util util = new Util(DialogService, Snackbar);
+            var confirmacao = await util.DialogConfirma(
+                msg: $"Deseja realmente excluir a turma '{turma.Nome}'?", 
+                buttonText: "Excluir", 
+                color: Color.Error, 
+                titulo: "Confirmar Exclusão");
             
             if (confirmacao)
             {
-                EscolaService.ExcluirTurma(turmaId);
+                await EscolaService.ExcluirTurma(turmaId);
                 turmas = EscolaService.TurmaListar();
                 StateHasChanged();
+                Snackbar.Add(message: "Turma excluída com sucesso!", Severity.Success);
             }
         }
     }
+
+    
 }

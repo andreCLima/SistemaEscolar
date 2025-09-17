@@ -6,6 +6,11 @@
 @inject EscolaService EscolaService
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
 <PageTitle>Detalhes do Diário</PageTitle>
 
@@ -310,7 +315,8 @@
     {
         if (string.IsNullOrWhiteSpace(textoRegistro))
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o texto do registro.");
+            //await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o texto do registro.");
+            Snackbar.Add(message: "Por favor, preencha o texto do registro.", Severity.Warning);
             return;
         }
 
@@ -318,7 +324,8 @@
         {
             // Criar novo registro
             if(diario == null){
-               await JSRuntime.InvokeVoidAsync("alert", "Erro de referencia Null(diario)");
+               //await JSRuntime.InvokeVoidAsync("alert", "Erro de referencia Null(diario)");
+               Snackbar.Add(message: "Erro de referencia Null(diario)", Severity.Error);
                return; 
             }
             var novoRegistro = new Registro
@@ -330,21 +337,18 @@
             };
 
             diario.Registros.Add(novoRegistro);
-            EscolaService.Save();
+            await EscolaService.Save();
             
             FecharModalRegistro();
             StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("alert", "Registro salvo com sucesso!");
+            //await JSRuntime.InvokeVoidAsync("alert", "Registro salvo com sucesso!");
+            Snackbar.Add(message: "Registro salvo com sucesso!", Severity.Success);
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao salvar registro: {ex.Message}");
+            //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao salvar registro: {ex.Message}");
+            Snackbar.Add(message: $"Erro ao salvar registro: {ex.Message}", Severity.Error);
         }
-    }
-
-    private void VerRegistros()
-    {
-        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
     }
 
     private void MesAnterior()

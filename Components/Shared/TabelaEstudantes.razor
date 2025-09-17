@@ -3,6 +3,11 @@
 
 @inject EscolaService EscolaService
 @inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -177,23 +182,26 @@
     {
         if (string.IsNullOrWhiteSpace(nomeEstudante))
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome do estudante.");
+            //await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome do estudante.");
+            Snackbar.Add(message: "Por favor, preencha o nome do estudante.", Severity.Warning);
             return;
         }
 
         try
         {
-            EscolaService.CadastrarEstudante(TurmaId, nomeEstudante);
+            await EscolaService.CadastrarEstudante(TurmaId, nomeEstudante);
             
             // Atualizar a turma para refletir as mudanças
             turma = EscolaService.GetTurmaPorId(TurmaId);
             FecharModalCadastroEstudante();
             StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("alert", "Estudante cadastrado com sucesso!");
+            //await JSRuntime.InvokeVoidAsync("alert", "Estudante cadastrado com sucesso!");
+            Snackbar.Add(message: "Estudante cadastrado com sucesso!", Severity.Success);
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar estudante: {ex.Message}");
+            //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar estudante: {ex.Message}");
+            Snackbar.Add(message: $"Erro ao cadastrar estudante: {ex.Message}", Severity.Error);
         }
     }
 
@@ -219,23 +227,26 @@
     {
         if (string.IsNullOrWhiteSpace(nomeAlteracao))
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome do estudante.");
+            //await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome do estudante.");
+            Snackbar.Add(message: "Por favor, preencha o nome do estudante.", Severity.Warning);
             return;
         }
 
         try
         {
-            EscolaService.AlterarEstudante(estudanteIdAlteracao, nomeAlteracao);
+            await EscolaService.AlterarEstudante(estudanteIdAlteracao, nomeAlteracao);
             
             // Atualizar a turma para refletir as mudanças
             turma = EscolaService.GetTurmaPorId(TurmaId);
             FecharModalAlteracaoEstudante();
             StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("alert", "Estudante alterado com sucesso!");
+            //await JSRuntime.InvokeVoidAsync("alert", "Estudante alterado com sucesso!");
+            Snackbar.Add(message: "Estudante alterado com sucesso!", Severity.Success);
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar estudante: {ex.Message}");
+            //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar estudante: {ex.Message}");
+            Snackbar.Add(message: $"Erro ao alterar estudante: {ex.Message}", Severity.Error);
         }
     }
 
@@ -244,23 +255,32 @@
         var estudante = turma?.Estudantes.FirstOrDefault(e => e.ID == estudanteId);
         if (estudante != null)
         {
+            /*
             var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
                 $"Deseja realmente excluir o estudante '{estudante.Nome}'?\n\n");
-            
+            */
+            Util util = new Util(DialogService, Snackbar);
+            var confirmacao = await util.DialogConfirma(
+                msg: $"Deseja realmente excluir o estudante '{estudante.Nome}'?\n\n",
+                buttonText: "Excluir",
+                color: Color.Error,
+                titulo: "Confirmar Exclusão");
             if (confirmacao)
             {
                 try
                 {
-                    EscolaService.ExcluirEstudante(estudanteId);
+                    await EscolaService.ExcluirEstudante(estudanteId);
                     
                     // Atualizar a turma para refletir as mudanças
                     turma = EscolaService.GetTurmaPorId(TurmaId);
                     StateHasChanged();
-                    await JSRuntime.InvokeVoidAsync("alert", "Estudante excluído com sucesso!");
+                    //await JSRuntime.InvokeVoidAsync("alert", "Estudante excluído com sucesso!");
+                    Snackbar.Add(message: "Estudante excluído com sucesso!", Severity.Success);
                 }
                 catch (Exception ex)
                 {
-                    await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir estudante: {ex.Message}");
+                    //await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir estudante: {ex.Message}");
+                    Snackbar.Add(message: $"Erro ao excluir estudante: {ex.Message}", Severity.Error);
                 }
             }
         }

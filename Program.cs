@@ -1,6 +1,7 @@
 using SistemaEscolarWeb.Components;
 using SistemaEscolarWeb.Services;
 using MudBlazor.Services;
+using MudBlazor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,13 +16,15 @@ builder.Services.AddSingleton<EscolaService>();
 // Adiciona serviços do MudBlazor
 builder.Services.AddMudServices(config =>
 {
-    config.SnackbarConfiguration.PreventDuplicates = false;
+    //configuração do snackbar
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopCenter; // Centralizado
+    config.SnackbarConfiguration.PreventDuplicates = true;
     config.SnackbarConfiguration.NewestOnTop = true;
     config.SnackbarConfiguration.ShowCloseIcon = true;
-    config.SnackbarConfiguration.VisibleStateDuration = 3000; // 3 segundos
-    config.SnackbarConfiguration.HideTransitionDuration = 200;
+
+    config.SnackbarConfiguration.VisibleStateDuration = 3000; // tempo em ms (3s)
+    config.SnackbarConfiguration.HideTransitionDuration = 200; 
     config.SnackbarConfiguration.ShowTransitionDuration = 200;
-    config.SnackbarConfiguration.MaxDisplayedSnackbars = 5;
 });
 
 var app = builder.Build();

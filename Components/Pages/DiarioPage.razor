@@ -4,6 +4,11 @@
 @using SistemaEscolarWeb.Models
 @inject EscolaService EscolaService
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
 <PageTitle>Diário</PageTitle>
 

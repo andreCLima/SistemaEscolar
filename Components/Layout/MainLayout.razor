@@ -1,5 +1,16 @@
 ﻿@inherits LayoutComponentBase
 
+<!--mudblazor-->
+@* Required *@
+<MudThemeProvider />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -22,13 +33,3 @@
     <a class="dismiss">🗙</a>
 </div>
 
-<!--mudblazor-->
-@* Required *@
-<MudThemeProvider />
-<MudPopoverProvider />
-
-@* Needed for dialogs *@
-<MudDialogProvider />
-
-@* Needed for snackbars *@
-<MudSnackbarProvider />

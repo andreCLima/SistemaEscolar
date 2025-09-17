@@ -4,6 +4,11 @@
 @using SistemaEscolarWeb.Models
 @inject EscolaService EscolaService
 @inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudDialogProvider/>
+<MudSnackbarProvider/>
 
 <PageTitle>Escola</PageTitle>
 
@@ -139,9 +144,10 @@
     {
         if (!string.IsNullOrWhiteSpace(novaSerie))
         {
-            EscolaService.CadastrarSerie(novaSerie);
+            await EscolaService.CadastrarSerie(novaSerie);
             novaSerie = string.Empty;
-            await JSRuntime.InvokeVoidAsync("alert", "Série cadastrada com sucesso!");
+            //await JSRuntime.InvokeVoidAsync("alert", "Série cadastrada com sucesso!");
+            Snackbar.Add("Série cadastrada com sucesso!", Severity.Success);
             StateHasChanged();
         }
     }
