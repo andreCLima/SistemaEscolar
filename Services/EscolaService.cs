@@ -9,14 +9,14 @@ public class EscolaService
     public EscolaService()
     {
         _escola = SaveJSON.Load();
-        Seed();
+        DadosTeste();
     }
 
     public Escola GetEscola() => _escola;
 
     public void Save() => SaveJSON.Save(_escola);
 
-    private void Seed()
+    private void DadosTeste()
     {
         if (_escola.Series.Count > 0) return;
         
@@ -46,15 +46,14 @@ public class EscolaService
         t3.Estudantes.AddRange(new[] { est4, est5 });
 
         // Criar diários e adicionar às turmas
-        var d1 = new Diario { ID = 1, Disciplina = "Mat.", Educador = "João" };
-        var d2 = new Diario { ID = 2, Disciplina = "Port.", Educador = "Maria" };
-        var d3 = new Diario { ID = 3, Disciplina = "Geo.", Educador = "Leo" };
+        var d1 = new Diario { ID = 1, Disciplina = "Matematica", Educador = "Joao" };
+        var d2 = new Diario { ID = 2, Disciplina = "Portugues", Educador = "Maria" };
+        var d3 = new Diario { ID = 3, Disciplina = "Geografia", Educador = "Leo" };
         
         t2.Diarios.AddRange(new[] { d1, d2 });
         t3.Diarios.Add(d3);
 
         // Criar aulas e adicionar aos diários
-        /*
         var a1 = new Aula { ID = 1, DiaSemana = "Seg", NumeroAula = 1 };
         var a2 = new Aula { ID = 2, DiaSemana = "Qua", NumeroAula = 2 };
         var a3 = new Aula { ID = 3, DiaSemana = "Sex", NumeroAula = 3 };
@@ -62,7 +61,6 @@ public class EscolaService
         d1.Aulas.Add(a1);
         d2.Aulas.Add(a2);
         d3.Aulas.Add(a3);
-        */
 
         Save();
     }

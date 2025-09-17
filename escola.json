@@ -9,20 +9,10 @@
           "Nome": "A",
           "Estudantes": [
             {
-              "ID": 6,
-              "Nome": "Mario"
-            },
-            {
-              "ID": 7,
-              "Nome": "An@"
+              "ID": 1,
+              "Nome": "Ana"
             }
           ],
-          "Diarios": []
-        },
-        {
-          "ID": 5,
-          "Nome": "E",
-          "Estudantes": [],
           "Diarios": []
         }
       ]
@@ -33,48 +23,42 @@
       "Turmas": [
         {
           "ID": 2,
-          "Nome": "G",
+          "Nome": "B",
           "Estudantes": [
             {
               "ID": 2,
-              "Nome": "Brunoo"
+              "Nome": "Bruno"
             },
             {
-              "ID": 13,
-              "Nome": "Chagas"
+              "ID": 3,
+              "Nome": "Carlos"
             }
           ],
           "Diarios": [
             {
               "ID": 1,
-              "Disciplina": "Fisica",
-              "Educador": "Oi",
+              "Disciplina": "Matematica",
+              "Educador": "Joao",
               "Aulas": [
                 {
                   "ID": 1,
-                  "DiaSemana": "Dom",
-                  "NumeroAula": 1
-                },
-                {
-                  "ID": 2,
                   "DiaSemana": "Seg",
-                  "NumeroAula": 2
+                  "NumeroAula": 1
                 }
               ],
-              "Registros": [
-                {
-                  "ID": 1,
-                  "DiarioID": 1,
-                  "Data": "2025-09-08",
-                  "Texto": "testse"
-                }
-              ]
+              "Registros": []
             },
             {
               "ID": 2,
-              "Disciplina": "Port.",
+              "Disciplina": "Portugues",
               "Educador": "Maria",
-              "Aulas": [],
+              "Aulas": [
+                {
+                  "ID": 2,
+                  "DiaSemana": "Qua",
+                  "NumeroAula": 2
+                }
+              ],
               "Registros": []
             }
           ]
@@ -85,35 +69,25 @@
           "Estudantes": [
             {
               "ID": 4,
-              "Nome": "Dianaa"
+              "Nome": "Diana"
             },
             {
               "ID": 5,
               "Nome": "Edu"
-            },
-            {
-              "ID": 9,
-              "Nome": "Mario"
-            },
-            {
-              "ID": 10,
-              "Nome": "Andre"
-            },
-            {
-              "ID": 11,
-              "Nome": "Bolo"
-            },
-            {
-              "ID": 12,
-              "Nome": "Zuza"
             }
           ],
           "Diarios": [
             {
               "ID": 3,
-              "Disciplina": "Geo.",
+              "Disciplina": "Geografia",
               "Educador": "Leo",
-              "Aulas": [],
+              "Aulas": [
+                {
+                  "ID": 3,
+                  "DiaSemana": "Sex",
+                  "NumeroAula": 3
+                }
+              ],
               "Registros": []
             }
           ]
@@ -123,14 +97,7 @@
     {
       "ID": 3,
       "Nome": "3 ano",
-      "Turmas": [
-        {
-          "ID": 7,
-          "Nome": "D",
-          "Estudantes": [],
-          "Diarios": []
-        }
-      ]
+      "Turmas": []
     }
   ]
 }

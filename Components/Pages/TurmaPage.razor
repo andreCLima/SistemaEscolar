@@ -95,7 +95,7 @@
 
     labelEdit1="Série Atual"
     textoEdit1="@serieAtual"
-
+    enableEdit1=false
 
     labelEdit2="Nome da Turma"
     textoEdit2="@nomeTurma"
@@ -111,7 +111,7 @@
     private bool mostrarModalCadastro = false;
     private bool mostrarModalAlteracao = false;
     private string nomeTurma = string.Empty;
-    private int serieSelecionada = 0;
+    //private int serieSelecionada = 0;
     private int turmaIdAlteracao = 0;
     private string serieAtual = string.Empty;
 
@@ -120,16 +120,11 @@
         turmas = EscolaService.TurmaListar();
         series = EscolaService.GetEscola().Series;
     }
-/*
-     private void VerDetalhes(int turmaId)
-    {
-        Navigation.NavigateTo($"/turma/detalhes/{turmaId}");
-    }
-*/
+
     private void CadastrarTurma()
     {
         nomeTurma = string.Empty;
-        serieSelecionada = 0;
+        //serieSelecionada = 0;
         mostrarModalCadastro = true;
         Console.WriteLine("CadastrarTurma chamado");
     }
@@ -138,7 +133,7 @@
     {
         mostrarModalCadastro = false;
         nomeTurma = string.Empty;
-        serieSelecionada = 0;
+        //serieSelecionada = 0;
         Console.WriteLine("FecharModal chamado");
     }
 
@@ -198,10 +193,8 @@
 
     private async Task VerDetalhes(int turmaId)
     {
-        // Escreve no console do navegador (WASM) ou no output do servidor (Server)
-        //Console.WriteLine($"VerDetalhes chamado com id={turmaId}");
+        Console.WriteLine($"VerDetalhes chamado com id={turmaId}");
 
-        // Ou loga direto no console do browser via JS
         await JSRuntime.InvokeVoidAsync("console.log", $"VerDetalhes chamado com id={turmaId}");
 
         Navigation.NavigateTo($"/turma/detalhes/{turmaId}");

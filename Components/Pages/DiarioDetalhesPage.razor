@@ -15,37 +15,23 @@
         var turma = EscolaService.GetEscola().Series
             .SelectMany(s => s.Turmas)
             .FirstOrDefault(t => t.Diarios.Contains(diario));
-        var serie = EscolaService.GetEscola().Series
-            .FirstOrDefault(s => s.Turmas.Contains(turma));
+        var serie = turma != null? EscolaService.GetEscola().Series
+            .FirstOrDefault(s => s.Turmas.Contains(turma)) : null;
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Diário: @diario.Educador - @diario.Disciplina</h1>
+            <button class="btn btn-secondary" @onclick="@(() => Navigation.NavigateTo($"/turma/detalhes/{turma?.ID}"))">
+                <i class="bi bi-arrow-left"></i> Turma
+            </button>
             <button class="btn btn-secondary" @onclick="@(() => Navigation.NavigateTo("/diario"))">
                 <i class="bi bi-arrow-left"></i> Voltar
             </button>
         </div>
 
+        <!-- Calendário de Aulas e Informações do Diário -->
         <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Informações do Diário</h5>
-                    </div>
-                    <div class="card-body">
-                        <p><strong>Professor:</strong> @diario.Educador</p>
-                        <p><strong>Disciplina:</strong> @diario.Disciplina</p>
-                        <p><strong>Turma:</strong> @(turma?.Nome ?? "N/A")</p>
-                        <p><strong>Série:</strong> @(serie?.Nome ?? "N/A")</p>
-                        <p><strong>Total de Registros:</strong> @diario.Registros.Count</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Calendário de Aulas e Lista de Estudantes -->
-        <div class="row mt-4">
             <!-- Calendário de Aulas - Lado Esquerdo -->
-            <div class="col-md-5">
+            <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex justify-content-between align-items-center"> 
@@ -156,10 +142,28 @@
                 </div>
             </div>
 
-            <!-- Lista de Estudantes - Lado Direito -->
-            <div class="col-md-7">
+            <!-- Informações do Diário - Lado Direito -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Informações do Diário</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Professor:</strong> @diario.Educador</p>
+                        <p><strong>Disciplina:</strong> @diario.Disciplina</p>
+                        <p><strong>Turma:</strong> @(turma?.Nome ?? "N/A")</p>
+                        <p><strong>Série:</strong> @(serie?.Nome ?? "N/A")</p>
+                        <p><strong>Total de Registros:</strong> @diario.Registros.Count</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estudantes da Turma -->
+        <div class="row mt-4">
+            <div class="col-12">
                 <TabelaEstudantes 
-                    TurmaId="turma.ID"
+                    TurmaId="turma != null? turma.ID : 0"
                     Titulo="@($"Estudantes da Turma{(turma?.Estudantes != null ? $" ({turma.Estudantes.Count})" : "")}")"
                     Estudantes="turma?.Estudantes"
                     MostrarBotoesAcao="true"
@@ -168,11 +172,12 @@
         </div>
 
         <!-- Registros -->
-        
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Registros</h5>
-                </div>
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Registros</h5>
+            </div>
+            @if (diario.Registros.Any())
+            {
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-striped">
@@ -184,20 +189,27 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var registro in diario.Registros.OrderByDescending(r => r.Data))
-                                {
-                                    <tr>
-                                        <td>@registro.ID</td>
-                                        <td>@registro.Data.ToString("dd/MM/yyyy")</td>
-                                        <td>@registro.Texto</td>
-                                    </tr>
-                                }
+                                
+                                    @foreach (var registro in diario.Registros.OrderByDescending(r => r.Data))
+                                    {
+                                        <tr>
+                                            <td>@registro.ID</td>
+                                            <td>@registro.Data.ToString("dd/MM/yyyy")</td>
+                                            <td>@registro.Texto</td>
+                                        </tr>
+                                    }
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
-        
+            }else
+            {
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    Nenhum registro cadastrado.
+                </div>
+            }
+        </div>
     }
     else
     {
@@ -266,20 +278,7 @@
         }
     }
 
-    private void CadastrarAula()
-    {
-        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
-    }
-
-    private void AlterarAula()
-    {
-        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
-    }
-
-    private void ExcluirAula()
-    {
-        JSRuntime.InvokeVoidAsync("alert", "Funcionalidade em desenvolvimento");
-    }
+   
 
     private void NovoRegistro()
     {
@@ -318,6 +317,10 @@
         try
         {
             // Criar novo registro
+            if(diario == null){
+               await JSRuntime.InvokeVoidAsync("alert", "Erro de referencia Null(diario)");
+               return; 
+            }
             var novoRegistro = new Registro
             {
                 ID = diario.Registros.Count == 0 ? 1 : diario.Registros.Max(r => r.ID) + 1,

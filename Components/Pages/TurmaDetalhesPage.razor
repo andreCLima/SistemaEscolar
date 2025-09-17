@@ -261,13 +261,32 @@
                     <form>
                         <div class="mb-3">
                             <label for="disciplinaDiario" class="form-label">Disciplina *</label>
-                            <input type="text" class="form-control" id="disciplinaDiario" @bind="disciplinaDiario" 
-                                   placeholder="Ex: Matemática, Português, Geografia, etc." required>
+                            <select class="form-select" id="disciplinaDiario" @bind="disciplinaDiario" required>
+                                <option value="">Selecione uma disciplina</option>
+                                <option value="Matematica">Matematica</option>
+                                <option value="Portugues">Portugues</option>
+                                <option value="Literatura">Literatura</option>
+                                <option value="Redacao">Redacao</option>
+                                <option value="Historia">Historia</option>
+                                <option value="Geografia">Geografia</option>
+                                <option value="Filosofia">Filosofia</option>
+                                <option value="Sociologia">Sociologia</option>
+                                <option value="Fisica">Fisica</option>
+                                <option value="Quimica">Quimica</option>
+                                <option value="Biologia">Biologia</option>
+                                <option value="Ingles">Ingles</option>
+                                <option value="Espanhol">Espanhol</option>
+                                <option value="Artes">Artes</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="educadorDiario" class="form-label">Educador/Professor *</label>
-                            <input type="text" class="form-control" id="educadorDiario" @bind="educadorDiario" 
-                                   placeholder="Nome do professor" required>
+                            <InputText id="educadorDiario"
+                                        class="form-control"
+                                        @bind-Value="educadorDiario"
+                                        placeholder="Nome do professor"
+                                        required
+                                        oninput="this.value=this.value.replace(/[^A-Za-z\s]/g,'')" />
                         </div>
                     </form>
                 </div>
@@ -296,13 +315,32 @@
                     <form>
                         <div class="mb-3">
                             <label for="disciplinaAlteracao" class="form-label">Disciplina *</label>
-                            <input type="text" class="form-control" id="disciplinaAlteracao" @bind="disciplinaAlteracao" 
-                                   placeholder="Ex: Matemática, Português, Geografia, etc." required>
+                            <select class="form-select" id="disciplinaAlteracao" @bind="disciplinaAlteracao" required>
+                                <option value="">Selecione uma disciplina</option>
+                                <option value="Matematica">Matematica</option>
+                                <option value="Portugues">Portugues</option>
+                                <option value="Literatura">Literatura</option>
+                                <option value="Redacao">Redacao</option>
+                                <option value="Historia">Historia</option>
+                                <option value="Geografia">Geografia</option>
+                                <option value="Filosofia">Filosofia</option>
+                                <option value="Sociologia">Sociologia</option>
+                                <option value="Fisica">Fisica</option>
+                                <option value="Quimica">Quimica</option>
+                                <option value="Biologia">Biologia</option>
+                                <option value="Ingles">Ingles</option>
+                                <option value="Espanhol">Espanhol</option>
+                                <option value="Artes">Artes</option>
+                            </select>
                         </div>
                         <div class="mb-3">
                             <label for="educadorAlteracao" class="form-label">Educador/Professor *</label>
-                            <input type="text" class="form-control" id="educadorAlteracao" @bind="educadorAlteracao" 
-                                   placeholder="Nome do professor" required>
+                            <InputText id="educadorAlteracao"
+                                        class="form-control"
+                                        @bind-Value="educadorAlteracao"
+                                        placeholder="Nome do professor"
+                                        required
+                                        oninput="this.value=this.value.replace(/[^A-Za-z\s]/g,'')" />
                         </div>
                     </form>
                 </div>
@@ -338,10 +376,10 @@
     private string disciplinaAlteracao = string.Empty;
     private string educadorAlteracao = string.Empty;
 
-    private bool mostrarModalCadastroEstudante = false;
+    //private bool mostrarModalCadastroEstudante = false;
     private string nomeEstudante = string.Empty;
-    private bool mostrarModalAlteracaoEstudante = false;
-    private int estudanteIdAlteracao = 0;
+    //private bool mostrarModalAlteracaoEstudante = false;
+    //private int estudanteIdAlteracao = 0;
     private string nomeAlteracao = string.Empty;
 
     protected override void OnInitialized()
@@ -448,7 +486,7 @@
         {
             EscolaService.AlterarAula(aulaIdAlteracao, diarioAlteracao, diaSemanaAlteracao, numeroAulaAlteracao);
             
-            // Atualizar a turma para refletir as mudanças
+            // Atualizar a turma 
             turma = EscolaService.GetTurmaPorId(TurmaId);
             FecharModalAlteracaoAula();
             StateHasChanged();
@@ -468,8 +506,7 @@
         if (aula != null)
         {
             var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
-                $"Deseja realmente excluir a aula do dia {aula.DiaSemana}, número {aula.NumeroAula}?\n\n" +
-                "ATENÇÃO: Esta ação não pode ser desfeita!");
+                $"Deseja realmente excluir a aula do dia {aula.DiaSemana}, número {aula.NumeroAula}?\n\n");
             
             if (confirmacao)
             {
@@ -579,8 +616,7 @@
         if (diario != null)
         {
             var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
-                $"Deseja realmente excluir o diário '{diario.Disciplina}' do professor '{diario.Educador}'?\n\n" +
-                "ATENÇÃO: Esta ação também excluirá todas as aulas e registros associados a este diário!");
+                $"Deseja realmente excluir o diário '{diario.Disciplina}' do professor '{diario.Educador}'?\n\n");
             
             if (confirmacao)
             {
@@ -600,115 +636,6 @@
             }
         }
     }
-
-/*
-    private void CadastrarEstudante()
-    {
-        nomeEstudante = string.Empty;
-        mostrarModalCadastroEstudante = true;
-    }
-
-    private void FecharModalCadastroEstudante()
-    {
-        mostrarModalCadastroEstudante = false;
-        nomeEstudante = string.Empty;
-    }
-
-    private async Task SalvarEstudante()
-    {
-        if (string.IsNullOrWhiteSpace(nomeEstudante))
-        {
-            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome do estudante.");
-            return;
-        }
-
-        try
-        {
-            EscolaService.CadastrarEstudante(TurmaId, nomeEstudante);
-            
-            // Atualizar a turma para refletir as mudanças
-            turma = EscolaService.GetTurmaPorId(TurmaId);
-            FecharModalCadastroEstudante();
-            StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("alert", "Estudante cadastrado com sucesso!");
-        }
-        catch (Exception ex)
-        {
-            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao cadastrar estudante: {ex.Message}");
-        }
-    }
-
-    private void AlterarEstudante(int estudanteId)
-    {
-        var estudante = turma?.Estudantes.FirstOrDefault(e => e.ID == estudanteId);
-        if (estudante != null)
-        {
-            estudanteIdAlteracao = estudanteId;
-            nomeAlteracao = estudante.Nome;
-            mostrarModalAlteracaoEstudante = true;
-        }
-    }
-
-    private void FecharModalAlteracaoEstudante()
-    {
-        mostrarModalAlteracaoEstudante = false;
-        estudanteIdAlteracao = 0;
-        nomeAlteracao = string.Empty;
-    }
-
-    private async Task SalvarAlteracaoEstudante()
-    {
-        if (string.IsNullOrWhiteSpace(nomeAlteracao))
-        {
-            await JSRuntime.InvokeVoidAsync("alert", "Por favor, preencha o nome do estudante.");
-            return;
-        }
-
-        try
-        {
-            EscolaService.AlterarEstudante(estudanteIdAlteracao, nomeAlteracao);
-            
-            // Atualizar a turma para refletir as mudanças
-            turma = EscolaService.GetTurmaPorId(TurmaId);
-            FecharModalAlteracaoEstudante();
-            StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("alert", "Estudante alterado com sucesso!");
-        }
-        catch (Exception ex)
-        {
-            await JSRuntime.InvokeVoidAsync("alert", $"Erro ao alterar estudante: {ex.Message}");
-        }
-    }
-
-    private async Task ExcluirEstudante(int estudanteId)
-    {
-        var estudante = turma?.Estudantes.FirstOrDefault(e => e.ID == estudanteId);
-        if (estudante != null)
-        {
-            var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
-                $"Deseja realmente excluir o estudante '{estudante.Nome}'?\n\n" +
-                "ATENÇÃO: Esta ação não pode ser desfeita!");
-            
-            if (confirmacao)
-            {
-                try
-                {
-                    EscolaService.ExcluirEstudante(estudanteId);
-                    
-                    // Atualizar a turma para refletir as mudanças
-                    turma = EscolaService.GetTurmaPorId(TurmaId);
-                    StateHasChanged();
-                    await JSRuntime.InvokeVoidAsync("alert", "Estudante excluído com sucesso!");
-                }
-                catch (Exception ex)
-                {
-                    await JSRuntime.InvokeVoidAsync("alert", $"Erro ao excluir estudante: {ex.Message}");
-                }
-            }
-        }
-    }
-
-*/
 
     private void VerDiario(int diarioId)
     {

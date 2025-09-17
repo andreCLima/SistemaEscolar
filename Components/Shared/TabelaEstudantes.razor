@@ -78,8 +78,12 @@
                     <form>
                         <div class="mb-3">
                             <label for="nomeEstudante" class="form-label">Nome do Estudante *</label>
-                            <input type="text" class="form-control" id="nomeEstudante" @bind="nomeEstudante" 
-                                   placeholder="Digite o nome completo do estudante" required>
+                            <InputText id="nomeEstudante"
+                                        class="form-control"
+                                        @bind-Value="nomeEstudante"
+                                        placeholder="Digite o nome completo do estudante"
+                                        required
+                                        oninput="this.value=this.value.replace(/[^A-Za-z\s]/g,'')" />
                         </div>
                     </form>
                 </div>
@@ -108,8 +112,12 @@
                     <form>
                         <div class="mb-3">
                             <label for="nomeAlteracao" class="form-label">Nome do Estudante *</label>
-                            <input type="text" class="form-control" id="nomeAlteracao" @bind="nomeAlteracao" 
-                                   placeholder="Digite o nome completo do estudante" required>
+                            <InputText id="nomeAlteracao"
+                                        class="form-control"
+                                        @bind-Value="nomeAlteracao"
+                                        placeholder="Digite o nome completo do estudante"
+                                        required
+                                        oninput="this.value=this.value.replace(/[^A-Za-z\s]/g,'')" />
                         </div>
                     </form>
                 </div>
@@ -237,8 +245,7 @@
         if (estudante != null)
         {
             var confirmacao = await JSRuntime.InvokeAsync<bool>("confirm", 
-                $"Deseja realmente excluir o estudante '{estudante.Nome}'?\n\n" +
-                "ATENÇÃO: Esta ação não pode ser desfeita!");
+                $"Deseja realmente excluir o estudante '{estudante.Nome}'?\n\n");
             
             if (confirmacao)
             {
@@ -258,4 +265,6 @@
             }
         }
     }
+
+    
 }

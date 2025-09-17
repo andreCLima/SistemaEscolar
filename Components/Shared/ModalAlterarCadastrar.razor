@@ -18,16 +18,36 @@
                     {
                         <div class="mb-3">
                             <label for="nomeTurma" class="form-label">@labelEdit1</label>
-                            <input type="text" class="form-control" id="edit1" @bind="@textoEdit1"
-                                    placeholder="@expEdit1" required>
+                            @if(enableEdit1)
+                            {
+                            <InputText id="edit1"
+                                        class="form-control"
+                                        @bind-Value="@textoEdit1"
+                                        placeholder="@expEdit1"
+                                        required
+                                        oninput="this.value=this.value.replace(/[^A-Za-z0-9\s]/g,'')" />
+                            }else
+                            {
+                            <InputText id="edit1"
+                                        class="form-control"
+                                        @bind-Value="@textoEdit1"
+                                        placeholder="@expEdit1"
+                                        required
+                                        disabled
+                                        oninput="this.value=this.value.replace(/[^A-Za-z0-9\s]/g,'')" />
+                            }
                         </div>
                     }
                     @if (labelEdit2 != String.Empty)
                     {
                         <div class="mb-3">
                             <label for="nomeTurma" class="form-label">@labelEdit2</label>
-                            <input type="text" class="form-control" id="edit2" @bind="@textoEdit2" 
-                                    placeholder="@expEdit2" required>
+                            <InputText id="edit2"
+                                        class="form-control"
+                                        @bind-Value="@textoEdit2"
+                                        placeholder="@expEdit2"
+                                        required
+                                        oninput="this.value=this.value.replace(/[^A-Za-z0-9\s]/g,'')" />
                         </div>
                     }
                     @if (series.Count > 0)
@@ -63,6 +83,7 @@
     [Parameter] public string labelEdit1 { get; set; } = String.Empty;
     [Parameter] public string expEdit1 { get; set; } = String.Empty;
     [Parameter] public string textoEdit1 { get; set; } = String.Empty;
+    [Parameter] public bool enableEdit1 { get; set; } = true;
 
     [Parameter] public string labelEdit2 { get; set; } = String.Empty;
     [Parameter] public string expEdit2 { get; set; } = String.Empty;
@@ -86,6 +107,7 @@
         labelEdit1 = string.Empty;
         expEdit1 = string.Empty;
         textoEdit1 = string.Empty;
+        enableEdit1 = true;
 
         labelEdit2 = string.Empty;
         expEdit2 = string.Empty;

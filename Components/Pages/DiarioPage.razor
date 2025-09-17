@@ -34,8 +34,8 @@
                                 var turma = EscolaService.GetEscola().Series
                                     .SelectMany(s => s.Turmas)
                                     .FirstOrDefault(t => t.Diarios.Contains(educador));
-                                var serie = EscolaService.GetEscola().Series
-                                    .FirstOrDefault(s => s.Turmas.Contains(turma));
+                                var serie = turma != null? EscolaService.GetEscola().Series
+                                    .FirstOrDefault(s => s.Turmas.Contains(turma)) : null;
                                 
                                 <tr>
                                     <td>@educador.Educador</td>
